@@ -11,3 +11,7 @@ unzipF ps = foldr func ([],[]) ps
 unzipM :: [(a,b)] -> ([a],[b])
 unzipM [] = ([],[])
 unzipM a   = (map fst a, map snd a)
+
+unzipL :: [(a,b)] -> ([a],[b])
+unzipL [] = ([],[])
+unzipL ps = ([ fst p | p <-ps ],[ snd p | p <-ps ])
