@@ -26,3 +26,14 @@ getIndices (Node st )= foldl irHoja [] st
 						where
 							irHoja l (_,Leaf x) = x:l
 							irHoja l (_,Node t) = foldl irHoja l t
+
+findSubstrings' :: String -> SuffixTree -> [Int]
+findSubstrings' s (Leaf _)  = error "Se esta buscando substring en una hoja (Leaf)"
+findSubstrings' s (Node st) 
+				| st == [] = []
+				| isPrefix s a = getIndices nodo 
+				| isPrefix a s = findSubstrings' (removePrefix a s) nodo
+				| otherwise = findSubstrings' s $ Node $ tail st
+				where
+					a = fst $ head st
+					nodo = snd $ head st
