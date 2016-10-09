@@ -12,3 +12,6 @@ removePrefix p s = if isPrefix p s then drop (length p) s
 					else s
 suffixes :: [a] -> [[a]]
 suffixes s = scanr (:) [] s
+
+isSubstring :: String -> String -> Bool
+isSubstring s1 s2 = any (isPrefix s1) (suffixes s2)
