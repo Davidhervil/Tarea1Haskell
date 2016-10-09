@@ -1,3 +1,4 @@
+import Data.List
 type Height  = Int
 type Width   = Int
 data Picture = Picture {
@@ -15,7 +16,7 @@ above p0 p1 = if width p0 == width p1 then
 												 width= width p0,
 												 pixels = pixels p0 ++ pixels p1 
 												}
-									else 
+									else
 										error "can’t ’above’ different widths"
 
 beside :: Picture -> Picture -> Picture
@@ -30,3 +31,6 @@ beside p0 p1 = if height p0 == height p1 then
 					beside' []      xs2  = xs2
 					beside' xs1      []  = xs1
 					beside' (x:xs1) (x2:xs2) = (x ++ x2):beside' xs1 xs2
+
+toString :: Picture -> String -- Notar que antes era un intercalate "\n" . pixels
+toString = concat . map (++"\n") . pixels 
