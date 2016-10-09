@@ -37,3 +37,10 @@ findSubstrings' s (Node st)
 				where
 					a = fst $ head st
 					nodo = snd $ head st
+
+bananatree = Node [("banana", Leaf 0),
+					("a", Node [("na", Node [("na", Leaf 1),
+								("", Leaf 3)]),
+								("", Leaf 5)]),
+					("na", Node [("na", Leaf 2),
+					("", Leaf 4)])]
