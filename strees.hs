@@ -15,3 +15,6 @@ suffixes s = scanr (:) [] s
 
 isSubstring :: String -> String -> Bool
 isSubstring s1 s2 = any (isPrefix s1) (suffixes s2)
+
+findSubstrings :: String -> String -> [Int]
+findSubstrings s1 s2 = findIndices True $ map (isPrefix s1) suffixes s2
