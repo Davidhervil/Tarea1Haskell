@@ -34,3 +34,16 @@ beside p0 p1 = if height p0 == height p1 then
 
 toString :: Picture -> String -- Notar que antes era un intercalate "\n" . pixels
 toString = concat . map (++"\n") . pixels 
+
+stack :: [Picture] -> Picture
+stack = foldr1 above
+
+spread :: [Picture] -> Picture
+spread = foldl1 beside
+
+row :: String -> Picture
+row = spread . map pixel
+
+blank :: (Height,Width) -> Picture
+--blank (h,w) = stack $ replicate h $ row $ replicate w ' '
+blank = uncurry ((stack .) . (. (row . flip replicate ' ') ) . replicate )
