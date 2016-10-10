@@ -32,7 +32,7 @@ beside p0 p1 = if height p0 == height p1 then
 					beside' xs1      []  = xs1
 					beside' (x:xs1) (x2:xs2) = (x ++ x2):beside' xs1 xs2
 
-toString :: Picture -> String -- Notar que antes era un intercalate "\n" . pixels
+toString :: Picture -> String -- Notar que antes era un intercalate "\n" . pixels. Lo que deja sin '\n' al final
 toString = concat . map (++"\n") . pixels 
 
 stack :: [Picture] -> Picture
