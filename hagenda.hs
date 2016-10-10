@@ -45,5 +45,5 @@ row :: String -> Picture
 row = spread . map pixel
 
 blank :: (Height,Width) -> Picture
---blank (h,w) = stack $ replicate h $ row $ replicate w ' '
+--blank (h,w) = stack $ replicate h $ row $ replicate w ' ' <==== VERSION POINTFUL
 blank = uncurry ((stack .) . (. (row . flip replicate ' ') ) . replicate )
