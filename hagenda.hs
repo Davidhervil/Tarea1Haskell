@@ -1,4 +1,29 @@
 import Data.List
+type Day   = Int
+-- Suponga que est· entre 1 y 31
+type Year  = Int
+-- Suponga que es positivo
+data Month = Enero
+			| Febrero
+			| Marzo
+			| Abril
+			| Mayo
+			| Junio
+			| Julio
+			| Agosto
+			| Septiembre
+			| Octubre
+			| Noviembre
+			| Diciembre
+	deriving (Show,Eq,Ord,Enum)
+data DayName = Domingo
+			| Lunes
+			| Martes
+			| Miercoles
+			| Jueves
+			| Viernes
+			| Sabado
+	deriving (Show,Eq,Ord,Enum)
 type Height  = Int
 type Width   = Int
 data Picture = Picture {
@@ -44,6 +69,47 @@ spread = foldl1 beside
 row :: String -> Picture
 row = spread . map pixel
 
-blank :: (Height,Width) -> Picture
 --blank (h,w) = stack $ replicate h $ row $ replicate w ' ' <==== VERSION POINTFUL
+blank :: (Height,Width) -> Picture
 blank = uncurry ((stack .) . (. (row . flip replicate ' ') ) . replicate )
+
+
+
+
+
+
+
+
+leap :: Year -> Bool
+leap y = if (mod y 100) == 0 then (mod y 400) == 0 else (mod y 4) == 0
+
+mlengths  :: Year -> [Day]
+mlengths y = [31, if leap y then 29 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+
+jan1 :: Year -> DayName
+jan1 y = toEnum  (mod
+					(
+					1                 +
+					((y-1) * 365)     +
+			 		div (y - 1) 4     +
+			 		div (y - 1) 400   -
+			 		div (y - 1) 100 )
+			 		7)
+				
+--      Domingo es cero
+-- 		Multiplicamos el numero de años que han pasado
+-- 		Sumamos los años bisiestos 
+
+mtotals :: Year -> [Int]
+mtotals y = scanl (+) (fromEnum (jan1 y)) b
+			where b = mlengths y
+
+fstdays :: Year -> [DayName]
+fstdays y = map toEnum ( map (`mod` 7) ((init . mtotals )y))
+
+fstday :: Month -> Year -> DayName
+fstday m y = (fstdays y ) !! (fromEnum m)
+
+day :: Day -> Month -> Year -> DayName
+day d m y = toEnum $ ( mod ((fromEnum (fstday m y)) + (fromEnum d) +6 ) 7 )
