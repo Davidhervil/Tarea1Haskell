@@ -75,15 +75,21 @@ blank = uncurry ((stack .) . (. (row . flip replicate ' ') ) . replicate )
 
 
 ------------------------------------------------------------------------------------
--- CREO QUE ESTAS DOS SE PUEDEN HACER SOLO CON FOLDL1
--- NOTA : Sobra uno en blanco. hacer con init y pegar ultimo.
 stackWith :: Height -> [Picture] -> Picture
 --stackWith h ps = foldl1 above (map (above (blank (h,width (head ps)))) ps)
-stackWith h ps = foldl1 above (intersperse ( ( (curry blank) h ( (width . head) ps ) ) ) ps )
+--stackWith h ps = foldl1 above ( (intersperse . ( ( (. (width . head) ) . (curry blank) ) h ) ) ps ps )
+--stackWith h ps = foldl1 above ( chevrFunc (intersperse . ( ( (. (width . head) ) . (curry blank) ) h ) ) ps )
+stackWith = (foldl1 above .) . chevrFunc . (intersperse .) . (. (width . head)) . curry blank
+	where
+		chevrFunc::(a-> a-> b) -> a -> b
+		chevrFunc f a = f a a
 
--- NOTA: Sobra uno en blanco. hacer init y pegar ultimo.
-spreadWith :: Height -> [Picture] -> Picture
-spreadWith w ps = foldl1 beside  (map (beside (blank (w, height (head ps)))) ps)
+spreadWith :: Width -> [Picture] -> Picture
+--spreadWith w ps = foldl1 beside  (intersperse ( blank ( (height . head) ps , w) ) ps ) 
+spreadWith = (foldl1 beside .) . chevrFunc . (intersperse .) . (. (height . head)) . curry blank
+	where
+		chevrFunc::(a-> a-> b) -> a -> b
+		chevrFunc f a = f a a
 
 tile :: [[Picture]] -> Picture
 tile = stack . (map spread)
@@ -91,6 +97,16 @@ tile = stack . (map spread)
 tileWith :: (Height, Width) -> [[Picture]] -> Picture
 tileWith (h,w) pss = stackWith h (map (spreadWith w) pss)
 
+rjustify :: Int -> String -> String
+rjustify n s = 	if n >= (length s) then
+					(replicate (n - length s ) ' ') ++ s
+				else
+					error "Tamaño final menor al texto"
+
+dnames:: Picture
+dnames = beside (pixel ' ') $ spreadWith 1 $ map (row.(take 2).show.cast) [0..6]
+	where
+		cast i = toEnum i :: DayName
 --------------------------------------------------------------------------------------
 
 leap :: Year -> Bool
@@ -130,5 +146,11 @@ day d m y = toEnum $ ( mod ((fromEnum (fstday m y)) + (fromEnum d) +6 ) 7 )
 
 ---------------------------------------------------------------------------
 
---rjustify :: Int -> String -> String
---rjustify n s = 
+a = pixel 'a'
+b = pixel 'b'
+c = pixel 'c'
+d = pixel 'd'
+e = pixel 'e'
+f = pixel 'f'
+g = pixel 'g'
+h = pixel 'h'
