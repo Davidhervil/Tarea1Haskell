@@ -109,7 +109,7 @@ dnames = beside (pixel ' ') $ spreadWith 1 $ map (row.(take 2).show.cast) [0..6]
 		cast i = toEnum i :: DayName
 
 banner :: Month -> Year -> Picture
---banner m y = row (rjustify ((length . toString) dnames ) (show m ++ (' ':show y)))
+--banner m y = row (rjustify (width dnames ) (show m ++ (' ':show y)))
 banner m y = row (rjustify (width dnames) (toString (spreadWith 1 [(row . show) m, (row . show) y])))
 
 
