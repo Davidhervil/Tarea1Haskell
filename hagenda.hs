@@ -32,9 +32,12 @@ data Picture = Picture {
 					pixels :: [[Char]]
 					} deriving (Show)
 
+-- |La funcion 'pixel' devuleve un 'Picture' dado un 'Char'.
 pixel :: Char -> Picture
 pixel c = Picture { height=1, width=1, pixels = [[c]]}
 
+-- |'above' toma dos 'Picture', p0 y p1 y genera otro 'Picture' cuyo 'pixels'
+-- tendrá a p0 arriba de p1.
 above :: Picture -> Picture -> Picture
 above p0 p1  = if width p0 == width p1 then
 					Picture { height= height p0 + width p1,
@@ -43,7 +46,8 @@ above p0 p1  = if width p0 == width p1 then
 							}
 				else
 					error "can’t ’above’ different widths"
-
+-- |'beside' toma dos 'Picture', p0 y p1 y genera otro 'Picture'cuyo 'pixels'
+-- tendrá a p0 a la izqueirda de p1.
 beside :: Picture -> Picture -> Picture
 beside p0 p1 = if height p0 == height p1 then
 					Picture { height= height p0,
@@ -57,19 +61,32 @@ beside p0 p1 = if height p0 == height p1 then
 					beside' xs1      []  = xs1
 					beside' (x:xs1) (x2:xs2) = (x ++ x2):beside' xs1 xs2
 
-toString :: Picture -> String -- Notar que antes era un intercalate "\n" . pixels. Lo que deja sin '\n' al final
+
+-- |'toString' dvuelve un 'String' "listo para printear" dado un 'Picture'.
+-- Notar que antes era un 'intercalate "\n" . pixels'. Lo que deja sin '\n' al
+-- final.
+toString :: Picture -> String
 toString = concatMap (++"\n") . pixels 
 
+-- |'stack' toma una lista de 'Picture' y retorna un 'Picture' con el resultado
+-- de haber apilado las "imágenes" con el primero elemento en el tope.
 stack :: [Picture] -> Picture
 stack = foldr1 above
 
+-- |'spread' toma una lista de 'Picture' y retorna un 'Picture' con el resultado
+-- de haber puesto las "imágenes" en el orden de la lista.
 spread :: [Picture] -> Picture
 spread = foldl1 beside
 
+-- |'row' retorna un 'Picture' de altura 1 y anchura el tamaño del 'String' que
+-- recibe. Su 'pixels' contendrá al 'String'.
 row :: String -> Picture
 row = spread . map pixel
 
---blank (h,w) = stack $ replicate h $ row $ replicate w ' ' <==== VERSION POINTFUL
+-- |'blank' recibe un par '(Height,Width)' y devuelve un 'Picture' de esas 
+-- dimensiones cuyo contenido son espacios en blanco.
+-- 
+-- blank (h,w) = stack $ replicate h $ row $ replicate w ' ' <==== VERSION POINTFUL
 blank :: (Height,Width) -> Picture
 blank = uncurry ((stack .) . (. (row . flip replicate ' ') ) . replicate )
 
