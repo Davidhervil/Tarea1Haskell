@@ -96,7 +96,7 @@ tile = stack . (map spread)
 
 tileWith :: (Height, Width) -> [[Picture]] -> Picture
 tileWith (h,w) pss = stackWith h (map (spreadWith w) pss)
-
+-----------------------------------------------------------------------------------
 rjustify :: Int -> String -> String
 rjustify n s = 	if n >= (length s) then
 					(replicate (n - length s ) ' ') ++ s
@@ -107,6 +107,14 @@ dnames:: Picture
 dnames = beside (pixel ' ') $ spreadWith 1 $ map (row.(take 2).show.cast) [0..6]
 	where
 		cast i = toEnum i :: DayName
+
+banner :: Month -> Year -> Picture
+banner m y = row (rjustify (width dnames) (toString (spreadWith 1 [(row . show) m, (row . show) y])))
+
+heading :: Month -> Year -> Picture
+heading m y = banner m y `above` dnames
+
+
 --------------------------------------------------------------------------------------
 
 leap :: Year -> Bool
@@ -115,6 +123,11 @@ leap y = if (mod y 100) == 0 then (mod y 400) == 0 else (mod y 4) == 0
 mlengths  :: Year -> [Day]
 mlengths y = [31, if leap y then 29 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
+group1 :: Int -> [a] -> [[a]]
+group1 _ [] = []
+group1 n xs
+  | n > 0 = (take n xs) : (group1 n (drop n xs))
+  | otherwise = error "N no positivo"
 
 jan1 :: Year -> DayName
 jan1 y = toEnum  (mod
