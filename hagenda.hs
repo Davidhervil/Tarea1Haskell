@@ -1,4 +1,4 @@
-import Data.List
+--import Data.List
 type Day   = Int
 -- Suponga que est· entre 1 y 31
 type Year  = Int
@@ -94,20 +94,30 @@ blank = uncurry ((stack .) . (. (row . flip replicate ' ') ) . replicate )
 ------------------------------------------------------------------------------------
 stackWith :: Height -> [Picture] -> Picture
 --stackWith h ps = foldl1 above (map (above (blank (h,width (head ps)))) ps)
---stackWith h ps = foldl1 above ( (intersperse . ( ( (. (width . head) ) . (curry blank) ) h ) ) ps ps )
---stackWith h ps = foldl1 above ( chevrFunc (intersperse . ( ( (. (width . head) ) . (curry blank) ) h ) ) ps )
-stackWith = (foldl1 above .) . chevrFunc . (intersperse .) . (. (width . head)) . curry blank
+--stackWith h ps = foldl1 above ( (interspersex . ( ( (. (width . head) ) . (curry blank) ) h ) ) ps ps )
+--stackWith h ps = foldl1 above ( chevrFunc (interspersex . ( ( (. (width . head) ) . (curry blank) ) h ) ) ps )
+stackWith = (foldl1 above .) . chevrFunc . (interspersex .) . (. (width . head)) . curry blank
 	where
 		chevrFunc::(a-> a-> b) -> a -> b
 		chevrFunc f a = f a a
+
+		interspersex :: a -> [a] -> [a]
+		interspersex a xs = tail $ foldr f [] xs
+			where
+				f x ls = a:(x:ls)
 
 spreadWith :: Width -> [Picture] -> Picture
---spreadWith w ps = foldl1 beside  (intersperse ( blank ( (height . head) ps , w) ) ps ) 
-spreadWith = (foldl1 beside .) . chevrFunc . (intersperse .) . (. (height . head)) . curry blank
+--spreadWith w ps = foldl1 beside  (interspersex ( blank ( (height . head) ps , w) ) ps ) 
+spreadWith = (foldl1 beside .) . chevrFunc . (interspersex .) . (. (height . head)) . curry blank
 	where
 		chevrFunc::(a-> a-> b) -> a -> b
 		chevrFunc f a = f a a
 
+		interspersex :: a -> [a] -> [a]
+		interspersex a xs = tail $ foldr f [] xs
+			where
+				f x ls = a:(x:ls)
+				
 tile :: [[Picture]] -> Picture
 tile = stack . (map spread)
 
