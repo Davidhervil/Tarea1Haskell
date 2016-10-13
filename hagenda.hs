@@ -113,8 +113,8 @@ stackWith :: Height -> [Picture] -> Picture
 stackWith = (foldl1 above .) . chevrFunc . (interspersex .) . (. (width . head)) . curry blank
 	where
 		-- |Esta función fue implementada para poder lograr la forma pointfree
-		-- puesto hacia  falta convertir en un sólo parametro el ps de la
-		-- expresión:
+		-- puesto hacia  falta convertir en un sólo parametro los 'ps' final
+		-- de la expresión:
 		--  stackWith h ps = foldl1 above ( (interspersex . ( ( (. (width . head) ) 
 		--								   . (curry blank) ) h ) ) ps ps 
 		--								  )
@@ -142,8 +142,8 @@ spreadWith :: Width -> [Picture] -> Picture
 spreadWith = (foldl1 beside .) . chevrFunc . (interspersex .) . (. (height . head)) . curry blank
 	where
 		-- |Esta función fue implementada para poder lograr la forma pointfree
-		-- puesto hacia  falta convertir en un sólo parametro el ps de la
-		-- expresión:
+		-- puesto hacia  falta convertir en un sólo parametro los ps de la
+		-- expresión análoga en stackWith
 		chevrFunc::(a-> a-> b) -> a -> b
 		chevrFunc f a = f a a
 
