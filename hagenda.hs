@@ -37,7 +37,7 @@ pixel :: Char -> Picture
 pixel c = Picture { height=1, width=1, pixels = [[c]]}
 
 -- |'above' toma dos 'Picture', p0 y p1 y genera otro 'Picture' cuyo 'pixels'
--- tendrá a p0 arriba de p1.
+-- tendrá a p0 "arriba" de p1.
 above :: Picture -> Picture -> Picture
 above p0 p1  = if width p0 == width p1 then
 					Picture { height= height p0 + width p1,
@@ -85,44 +85,81 @@ row = spread . map pixel
 
 -- |'blank' recibe un par '(Height,Width)' y devuelve un 'Picture' de esas 
 -- dimensiones cuyo contenido son espacios en blanco.
--- 
--- blank (h,w) = stack $ replicate h $ row $ replicate w ' ' <==== VERSION POINTFUL
+--  
+-- Para realizar la forma pointfree se partió de la expresion:
+-- 		blank (h,w) = stack $ replicate h $ row $ replicate w ' '
+-- y mediante operaciones de composición de funciones se llegó a la
+-- expresión final.
 blank :: (Height,Width) -> Picture
 blank = uncurry ((stack .) . (. (row . flip replicate ' ') ) . replicate )
 
 
 ------------------------------------------------------------------------------------
+
+-- |'stackWith' recibe un parámetro 'Height' y una lista de 'Picture' y retorna
+-- un 'Picture' con el resultado de apilar las "imágenes" intercalando "blanks"
+-- entre ellas con el mismo 'width' y de altura igual a la del primer parámetro.
+-- 
+-- Para transformar a forma point free se partió de la expresión:
+--
+-- 	 stackWith h ps = foldl1 above (map (above (blank (h,width (head ps)))) ps)
+-- 
+-- Mediante operaciones de comppsición de funciones se llegó a la expresión:
+--   stackWith = (foldl1 above .) . chevrFunc . (interspersex .) . (. (width . head)) . curry blank
+
 stackWith :: Height -> [Picture] -> Picture
---stackWith h ps = foldl1 above (map (above (blank (h,width (head ps)))) ps)
 --stackWith h ps = foldl1 above ( (interspersex . ( ( (. (width . head) ) . (curry blank) ) h ) ) ps ps )
 --stackWith h ps = foldl1 above ( chevrFunc (interspersex . ( ( (. (width . head) ) . (curry blank) ) h ) ) ps )
 stackWith = (foldl1 above .) . chevrFunc . (interspersex .) . (. (width . head)) . curry blank
 	where
+		-- |Esta función fue implementada para poder lograr la forma pointfree
+		-- puesto hacia  falta convertir en un sólo parametro el ps de la
+		-- expresión:
+		--  stackWith h ps = foldl1 above ( (interspersex . ( ( (. (width . head) ) 
+		--								   . (curry blank) ) h ) ) ps ps 
+		--								  )
 		chevrFunc::(a-> a-> b) -> a -> b
 		chevrFunc f a = f a a
 
+		-- |Esta función es nuestra reimplementación de 'intersperse'
+		-- de Data.List
 		interspersex :: a -> [a] -> [a]
 		interspersex a xs = tail $ foldr f [] xs
 			where
 				f x ls = a:(x:ls)
 
+-- |'spreadWith' recibe un parámetro 'Width' y una lista de 'Picture' y retorna
+-- un 'Picture' con el resultado de juntar de forma horizontal las "imágenes"
+-- intercalando "blanks" entre ellas con el mismo 'height' y de anchura igual
+-- a la del primer parámetro.
+-- 
+-- Para transformar a forma point free se partió de la expresión:
+--
+-- 	spreadWith w ps = foldl1 beside  (interspersex ( blank ( (height . head) ps , w) ) ps ) 
+-- 
+-- Mediante operaciones de comppsición de funciones se llegó a la expresión final.
 spreadWith :: Width -> [Picture] -> Picture
---spreadWith w ps = foldl1 beside  (interspersex ( blank ( (height . head) ps , w) ) ps ) 
 spreadWith = (foldl1 beside .) . chevrFunc . (interspersex .) . (. (height . head)) . curry blank
 	where
+		-- |Esta función fue implementada para poder lograr la forma pointfree
+		-- puesto hacia  falta convertir en un sólo parametro el ps de la
+		-- expresión:
 		chevrFunc::(a-> a-> b) -> a -> b
 		chevrFunc f a = f a a
 
+		-- |Esta función es nuestra reimplementación de 'intersperse'
+		-- de Data.List
 		interspersex :: a -> [a] -> [a]
 		interspersex a xs = tail $ foldr f [] xs
 			where
 				f x ls = a:(x:ls)
-				
+
 tile :: [[Picture]] -> Picture
 tile = stack . (map spread)
 
 tileWith :: (Height, Width) -> [[Picture]] -> Picture
-tileWith (h,w) pss = stackWith h (map (spreadWith w) pss)
+--tileWith (h,w) pss = stackWith h (map (spreadWith w) pss)
+tileWith = uncurry ((. (map . spreadWith)) . (.) . stackWith)
 -----------------------------------------------------------------------------------
 rjustify :: Int -> String -> String
 rjustify n s = 	if n >= (length s) then
