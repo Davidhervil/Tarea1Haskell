@@ -113,7 +113,7 @@ stackWith :: Height -> [Picture] -> Picture
 stackWith = (foldl1 above .) . chevrFunc . (interspersex .) . (. (width . head)) . curry blank
 	where
 		-- |Esta función fue implementada para poder lograr la forma pointfree
-		-- puesto hacia  falta convertir en un sólo parametro los 'ps' final
+		-- puesto hacia  falta convertir en un sólo parametro los 'ps' finales
 		-- de la expresión:
 		--  stackWith h ps = foldl1 above ( (interspersex . ( ( (. (width . head) ) 
 		--								   . (curry blank) ) h ) ) ps ps 
@@ -154,12 +154,19 @@ spreadWith = (foldl1 beside .) . chevrFunc . (interspersex .) . (. (height . hea
 			where
 				f x ls = a:(x:ls)
 
+-- |'tile' toma una mtariz de de 'Picture' y retorna un 'Picture' 
+-- con el resultado de unir todas las imágenes de la matriz.
 tile :: [[Picture]] -> Picture
 tile = stack . (map spread)
 
+-- |'tileWith' recibe un par de altura y ancho junto con una matriz de imágenes
+-- y retorna un 'Picture' con el resultado de aplicar la union de las imágenes
+-- de la matriz intercalando horizontalmente "blanks" de ancho 'w' y entre las
+-- filas "blanks" de altura 'h'.
 tileWith :: (Height, Width) -> [[Picture]] -> Picture
 --tileWith (h,w) pss = stackWith h (map (spreadWith w) pss)
 tileWith = uncurry ((. (map . spreadWith)) . (.) . stackWith)
+
 -----------------------------------------------------------------------------------
 rjustify :: Int -> String -> String
 rjustify n s = 	if n >= (length s) then
@@ -167,16 +174,19 @@ rjustify n s = 	if n >= (length s) then
 				else
 					error "Tamaño final menor al texto"
 
+-- |
 dnames:: Picture
 dnames = beside (pixel ' ') $ spreadWith 1 $ map (row.(take 2).show.cast) [0..6]
 	where
 		cast i = toEnum i :: DayName
 
+-- |
 banner :: Month -> Year -> Picture
 --banner m y = row (rjustify (width dnames) (toString (spreadWith 1 [(row . show) m, (row . show) y])))
 banner m y = row (rjustify (width dnames ) (show m ++ (' ':show y)))
 
 
+-- |
 heading :: Month -> Year -> Picture
 heading m y = banner m y `above` dnames
 
