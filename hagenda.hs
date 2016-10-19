@@ -1,4 +1,4 @@
---import Data.List
+import Data.List (sortBy)
 type Day   = Int
 -- Suponga que est· entre 1 y 31
 type Year  = Int
@@ -15,7 +15,7 @@ data Month = Enero
 			| Octubre
 			| Noviembre
 			| Diciembre
-	deriving (Show,Eq,Ord,Enum)
+	deriving (Show,Eq,Ord,Enum,Read)
 data DayName = Domingo
 			| Lunes
 			| Martes
@@ -23,7 +23,7 @@ data DayName = Domingo
 			| Jueves
 			| Viernes
 			| Sabado
-	deriving (Show,Eq,Ord,Enum)
+	deriving (Show,Eq,Ord,Enum,Read)
 type Height  = Int
 type Width   = Int
 data Picture = Picture {
@@ -31,6 +31,15 @@ data Picture = Picture {
 					width  :: Width,
 					pixels :: [[Char]]
 					} deriving (Show)
+
+data Evento = Evento {
+			year:: Year,
+			month:: Month,
+			dayZ:: Day,
+			nth	:: Int,
+			description :: String
+			}
+			deriving (Show,Read)
 
 -- |La funcion 'pixel' devuleve un 'Picture' dado un 'Char'.
 pixel :: Char -> Picture
@@ -199,10 +208,10 @@ leap y = if (mod y 100) == 0 then (mod y 400) == 0 else (mod y 4) == 0
 mlengths  :: Year -> [Day]
 mlengths y = [31, if leap y then 29 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
-group1 :: Int -> [a] -> [[a]]
-group1 _ [] = []
-group1 n xs
-  | n > 0 = (take n xs) : (group1 n (drop n xs))
+group :: Int -> [a] -> [[a]]
+group _ [] = []
+group n xs
+  | n > 0 = (take n xs) : (group n (drop n xs))
   | otherwise = error "N no positivo"
 
 jan1 :: Year -> DayName
@@ -233,6 +242,54 @@ day :: Day -> Month -> Year -> DayName
 day d m y = toEnum $ ( mod ((fromEnum (fstday m y)) + (fromEnum d) +6 ) 7 )
 
 
+---------------------------------------------------------------------------
+
+miord :: Evento -> Evento -> Ordering
+miord e1 e2 = if dias1 < dias2 then LT
+			  else 
+			  	if dias1 > dias2 then GT
+			  	else
+			  		if nth e1 < nth e2 then LT
+			  		else 
+			  			if nth e1 > nth e2 then GT
+			  			else 
+			  				EQ
+			  where 
+			  	dias1 = year e1 * 365 + (fromEnum(month e1)) * 30 + (dayZ e1)
+			  	dias2 = year e2 * 365 + (fromEnum(month e2)) * 30 + (dayZ e2)
+
+loadEvents :: FilePath -> IO [Evento]
+loadEvents pathName = do 
+	s <-readFile pathName
+	return ( sortBy miord (((map castlE).lines) s))
+	where
+		castlE s = read s :: Evento
+
+saveEvents :: FilePath -> [Evento] -> IO ()
+saveEvents path es = writeFile path $ unlines $ map show $ sortBy miord es
+
+
+--Preguntarle a novich  sobre ordenar esto
+eventsOnMonth :: [Evento] -> Month -> [Day]
+eventsOnMonth es m = foldl acum [] $ map dayZ $ filter (\e -> month e == m) es
+	where 
+		acum xs x = if not (elem x xs) then x:xs
+					else xs
+
+pix :: DayName -> Day -> [Day] -> [Picture]
+pix d s ms = (replicate (fromEnum d) (row "   ") )++
+			 (map ache [1..s]) ++
+			 (replicate ( 6 - (mod ( (fromEnum d)+s + 6) 7 ) ) (row "   ") )
+			 where
+			 	ache n = if elem n ms then
+			 							if n < 10 then row ( "> " ++ (show n))
+			 							else row (">" ++ (show n))
+			 			 else
+			 			 	if n < 10 then row ("  " ++ (show n))
+			 							else row (" " ++ (show n))
+
+entries :: DayName -> Day -> [Day] -> Picture
+entries dn d ds = tile $ group 7 $ pix dn d ds
 ---------------------------------------------------------------------------
 
 a = pixel 'a'
