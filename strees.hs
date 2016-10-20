@@ -17,7 +17,7 @@ isSubstring :: String -> String -> Bool
 isSubstring s1 s2 = any (isPrefix s1) (suffixes s2)
 
 findSubstrings :: String -> String -> [Int]
-findSubstrings s1 s2 = [n | (n,x) <-zip [1..] (map (isPrefix s1) (suffixes s2)), x] 
+findSubstrings s1 s2 = [n | (n,x) <-zip [0..] (map (isPrefix s1) (suffixes s2)), x] 
 
 --Segunda Parte
 getIndices :: SuffixTree -> [Int]
@@ -44,3 +44,5 @@ bananatree = Node [("banana", Leaf 0),
 								("", Leaf 5)]),
 					("na", Node [("na", Leaf 2),
 					("", Leaf 4)])]
+insert :: (String,Int) -> SuffixTree -> SuffixTree
+insert (s,i) t = undefined
