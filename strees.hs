@@ -17,7 +17,7 @@ isSubstring :: String -> String -> Bool
 isSubstring s1 s2 = any (isPrefix s1) (suffixes s2)
 
 findSubstrings :: String -> String -> [Int]
-findSubstrings s1 s2 = findIndices True $ map (isPrefix s1) suffixes s2
+findSubstrings s1 s2 = [n | (n,x) <-zip [1..] (map (isPrefix s1) (suffixes s2)), x] 
 
 --Segunda Parte
 getIndices :: SuffixTree -> [Int]
