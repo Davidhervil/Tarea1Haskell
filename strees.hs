@@ -17,7 +17,7 @@ isSubstring :: String -> String -> Bool
 isSubstring s1 s2 = any (isPrefix s1) (suffixes s2)
 
 findSubstrings :: String -> String -> [Int]
-findSubstrings s1 s2 = [n | (n,x) <-zip [0..] (map (isPrefix s1) (suffixes s2)), x] 
+findSubstrings s1 s2 = [ n | (n,x) <-zip [0..] (map (isPrefix s1) (suffixes s2)), x ] 
 
 --Segunda Parte
 getIndices :: SuffixTree -> [Int]
@@ -44,5 +44,35 @@ bananatree = Node [("banana", Leaf 0),
 								("", Leaf 5)]),
 					("na", Node [("na", Leaf 2),
 					("", Leaf 4)])]
+
 insert :: (String,Int) -> SuffixTree -> SuffixTree
-insert (s,i) t = undefined
+insert (s,i) (Leaf _) = error "Agregando en hojas"
+insert (s,i) (Node a) = if mismoPre == [] then Node ((s,Leaf i):a)
+						else
+							if (head.show.snd) found == 'L' then
+								Node (map replace a)
+							else
+								if resto /= [] then
+									Node (map push a)
+								else
+									Node (map seguir a)
+						where
+							mismoPre = [ n | n <- a, fst n /= "",(head.fst) n == head s ]
+							found = head mismoPre
+							-- if mismoPre /= [] then head mismoPre
+							--		else ("",Node []) PREGUNTAR A NOVICH
+							comunes [] _ = []
+							comunes _ [] = []
+							comunes (s1:ss1) (s2:ss2) = if s1 == s2 then s1:(comunes ss1 ss2)
+														else []
+							comun = comunes s (fst found)
+							diff = removePrefix (comunes s (fst found)) s
+							resto = removePrefix (comunes s (fst found)) (fst found)
+							replace e = if found == e then (comun,Node [(diff, Leaf i), (resto,snd found)])
+										else e
+							push e = if found == e then (comun,Node[(diff,Leaf i),(resto,snd found)])
+									 else e
+							seguir e = if e == found then (fst e,insert (diff,i) (snd found))
+									   else e
+buildTree :: String -> SuffixTree
+buildTree s = foldl (flip insert) (Node []) (reverse (zip (suffixes s) [0..]))
