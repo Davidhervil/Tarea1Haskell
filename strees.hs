@@ -89,10 +89,10 @@ longestRepeatedSubstring (Node st ) = fst $ foldl look ([],[]) st
 		look (lrss,path) (l,Node t)
 			| lrss == [] = (fst $ foldl look ([l],l) t,path)
 			| lrss /= [] = 
-				if length (head lrss) < (length path) + (length l) then
+				if length (head lrss) < (length $ path ++ l) then
 					(fst $ foldl look ([path ++ l],path ++ l) t , path)
 				else
-					if length (head lrss) == (length path) + (length l) then
+					if length (head lrss) == (length $ path ++ l) then
 						(fst $ foldl look ((path ++ l):lrss,path ++ l) t,path)
 					else
 						(fst $ foldl look (lrss,path ++ l) t,path)
