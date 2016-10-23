@@ -361,13 +361,14 @@ descPrompt (y,m,d) n list msj= list ++ [e]
 
 clearS = putStr (replicate 24 '\n')
 
-removePrompt (y,m,d) list r  = filter (otro) list
+removePrompt (y,m,d) list r  = filter (anotherD) list
 	where
-		otro a = (y /= year a)  			 || 
-				 (m /= fromEnum (month a))   || 
-				 (d /= dayZ a)  			 ||
+		anotherD a = (y,m,d) /= (year a, fromEnum (month a),dayZ a) ||
 				 r /= nth a
-				 
+
+getMax4Day (y,m,d) list = maximum $ map nth (filter (sameD) list)
+	where sameD a = (y,m,d) == (year a, fromEnum (month a),dayZ a)
+
 getInt :: IO Int
 getInt = do str <- getLine
             return (read str)
@@ -390,7 +391,7 @@ hacer list (y,m,d)= do
 		if s == 'r' then do
 			putStr "descr: "
 			msj <- getLine
-			let n =  maximum (map nth list)
+			let n =  getMax4Day (y,m,d) list
 			let list' = descPrompt (y,m,d) (n+1) list msj
 			hacer list' (y,m,d)
 		else
