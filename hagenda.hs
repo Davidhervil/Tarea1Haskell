@@ -311,6 +311,7 @@ helpPls = putStr x
 				\  d: eliminar un evento\n\
 				\  q: salir\n \n \n"
 
+currentDate :: IO (Year, Int, Day)
 currentDate = do
 	a <- TCLO.getCurrentTime
 	let (p,q,r) = TCAL.toGregorian ( TCLO.utctDay a)
@@ -319,17 +320,18 @@ currentDate = do
 	let 	 z 	= read (show r) :: Day
 	return ( x , mod (y+11) 12 ,z)
 
+move :: Char -> (Year, Int, Day) -> (Year,Int,Day)
 move op (y,m,d)
 	| op == 'h' = 
 		if (prevM m > m) then
 			(y-1,prevM m, d)
 			else 
-			(y, prevM m, d)
+			(y, prevM m, mlengths y !! (prevM m))
 	| op == 'l'	= 		
 		if (nextM m < m) then 
 			(y+1, nextM m, d)
 			else
-				(y,nextM m, d)
+				(y,nextM m, mlengths y !! (nextM m))
 	| op == 'j' = 		
 		if (d-1 < 1) then
 			move 'h' (y,m,mlengths y !! (prevM m))
@@ -345,12 +347,12 @@ move op (y,m,d)
 		prevM m = mod (fromEnum m + 11) 12
 
 
--- Toma una fecha y la muestra.
+prompt :: (Year, Int, Day) -> IO()
 prompt (y,m,d) = putStr (show y 				 	++ 
 			     (' ': (show (toEnum m :: Month))) 	++
 				 (' ':show d)						++
 				 "> ")
-
+descPrompt :: (Year, Int, Day) -> Int -> [Evento] -> [Char] -> [Evento]
 descPrompt (y,m,d) n list msj= list ++ [e] 
 				where e = Evento {
 							year  = y,
@@ -359,13 +361,17 @@ descPrompt (y,m,d) n list msj= list ++ [e]
 							nth	  = n,
 							description = msj}
 
+clearS :: IO ()
 clearS = putStr (replicate 24 '\n')
 
+removePrompt :: (Year, Int, Day) -> [Evento] -> Int -> [Evento]
 removePrompt (y,m,d) list r  = filter (anotherD) list
 	where
 		anotherD a = (y,m,d) /= (year a, fromEnum (month a),dayZ a) ||
 				 r /= nth a
 
+getMax4Day :: (Year, Int, Day) -> [Evento] -> Int
+getMax4Day (y,m,d) []   = 1
 getMax4Day (y,m,d) list = maximum $ map nth (filter (sameD) list)
 	where sameD a = (y,m,d) == (year a, fromEnum (month a),dayZ a)
 
@@ -373,6 +379,7 @@ getInt :: IO Int
 getInt = do str <- getLine
             return (read str)
 
+hacer :: [Evento] -> (Year, Int, Day) -> IO ()
 hacer list (y,m,d)= do
 	-- teclas para movimientos y eventos
 	let moves = ['j','k','l','h']
