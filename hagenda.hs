@@ -1,5 +1,9 @@
 import Data.List (sortBy)
-type Day   = Int
+import Data.Time.Clock
+import Data.Time.Calendar
+
+
+type Day1   = Int
 -- Suponga que est· entre 1 y 31
 type Year  = Int
 -- Suponga que es positivo
@@ -15,7 +19,7 @@ data Month = Enero
 			| Octubre
 			| Noviembre
 			| Diciembre
-	deriving (Show,Eq,Ord,Enum,Read)
+	deriving (Bounded,Show,Eq,Ord,Enum,Read)
 data DayName = Domingo
 			| Lunes
 			| Martes
@@ -23,7 +27,7 @@ data DayName = Domingo
 			| Jueves
 			| Viernes
 			| Sabado
-	deriving (Show,Eq,Ord,Enum,Read)
+	deriving (Bounded,Show,Eq,Ord,Enum,Read)
 type Height  = Int
 type Width   = Int
 data Picture = Picture {
@@ -35,7 +39,7 @@ data Picture = Picture {
 data Evento = Evento {
 			year:: Year,
 			month:: Month,
-			dayZ:: Day,
+			dayZ:: Day1,
 			nth	:: Int,
 			description :: String
 			}
@@ -205,7 +209,7 @@ heading m y = banner m y `above` dnames
 leap :: Year -> Bool
 leap y = if (mod y 100) == 0 then (mod y 400) == 0 else (mod y 4) == 0
 
-mlengths  :: Year -> [Day]
+mlengths  :: Year -> [Day1]
 mlengths y = [31, if leap y then 29 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 group :: Int -> [a] -> [[a]]
@@ -238,7 +242,7 @@ fstdays y = map toEnum ( map (`mod` 7) ((init . mtotals )y))
 fstday :: Month -> Year -> DayName
 fstday m y = (fstdays y ) !! (fromEnum m)
 
-day :: Day -> Month -> Year -> DayName
+day :: Day1 -> Month -> Year -> DayName
 day d m y = toEnum $ ( mod ((fromEnum (fstday m y)) + (fromEnum d) +6 ) 7 )
 
 
@@ -270,13 +274,13 @@ saveEvents path es = writeFile path $ unlines $ map show $ sortBy miord es
 
 
 --Preguntarle a novich  sobre ordenar esto
-eventsOnMonth :: [Evento] -> Month -> [Day]
+eventsOnMonth :: [Evento] -> Month -> [Day1]
 eventsOnMonth es m = foldl acum [] $ map dayZ $ filter (\e -> month e == m) es
 	where 
 		acum xs x = if not (elem x xs) then x:xs
 					else xs
 
-pix :: DayName -> Day -> [Day] -> [Picture]
+pix :: DayName -> Day1 -> [Day1] -> [Picture]
 pix d s ms = (replicate (fromEnum d) (row "   ") )++
 			 (map ache [1..s]) ++
 			 (replicate ( 6 - (mod ( (fromEnum d)+s + 6) 7 ) ) (row "   ") )
@@ -288,9 +292,9 @@ pix d s ms = (replicate (fromEnum d) (row "   ") )++
 			 			 	if n < 10 then row ("  " ++ (show n))
 			 							else row (" " ++ (show n))
 
-entries :: DayName -> Day -> [Day] -> Picture
+entries :: DayName -> Day1 -> [Day1] -> Picture
 entries dn d ds = tile $ group 7 $ pix dn d ds
----------------------------------------------------------------------------
+---------------------------------------------------------------------------	
 
 -- AYUDA :(
 helpPls :: IO ()
@@ -350,21 +354,3 @@ prompt (y,m,d) = show y 							++
 subprompt = do 
 				putStr "descr: "
 				getLine
-
-
-
-
-
-
-
-
-
-
-a = pixel 'a'
-b = pixel 'b'
-c = pixel 'c'
-d = pixel 'd'
-e = pixel 'e'
-f = pixel 'f'
-g = pixel 'g'
-h = pixel 'h'
