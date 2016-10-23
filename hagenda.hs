@@ -271,6 +271,8 @@ loadEvents pathName = do
 saveEvents :: FilePath -> [Evento] -> IO ()
 saveEvents path es = writeFile path $ unlines $ map show $ sortBy miord es
 
+eventsOnYear :: [Evento] -> Year -> [Evento]
+eventsOnYear es y = filter (\e -> year e == y) es
 
 --Preguntarle a novich  sobre ordenar esto
 eventsOnMonth :: [Evento] -> Month -> [Day]
@@ -385,11 +387,16 @@ getInt :: IO Int
 getInt = do str <- getLine
             return (read str)
 
+actual :: (Year,Month,Day) -> [Evento] -> Picture
+actual (y,m,d) lista = picture(m,y,fstday m y,(mlengths y) !! fromEnum m, eventsOnMonth (eventsOnYear lista y) m)
+
 hacer :: [Evento] -> (Year, Month, Day) -> IO ()
 hacer list (y,m,d)= do
 	-- teclas para movimientos y eventos
 	let moves = ['j','k','l','h']
 	let evnts = ['d','r']
+	let calActual = actual (y,m,d) list
+	putStr $ toString calActual
 	-- Mostrar fecha actual
 	prompt (y,m,d)
 	-- Solicitar entrada del Usuario
