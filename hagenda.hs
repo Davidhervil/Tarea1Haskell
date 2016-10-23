@@ -1,9 +1,8 @@
 import Data.List (sortBy)
-import Data.Time.Clock
-import Data.Time.Calendar
+import qualified Data.Time.Clock as TCLO
+import qualified Data.Time.Calendar as TCAL
 
-
-type Day1   = Int
+type Day   = Int
 -- Suponga que est· entre 1 y 31
 type Year  = Int
 -- Suponga que es positivo
@@ -39,7 +38,7 @@ data Picture = Picture {
 data Evento = Evento {
 			year:: Year,
 			month:: Month,
-			dayZ:: Day1,
+			dayZ:: Day,
 			nth	:: Int,
 			description :: String
 			}
@@ -209,7 +208,7 @@ heading m y = banner m y `above` dnames
 leap :: Year -> Bool
 leap y = if (mod y 100) == 0 then (mod y 400) == 0 else (mod y 4) == 0
 
-mlengths  :: Year -> [Day1]
+mlengths  :: Year -> [Day]
 mlengths y = [31, if leap y then 29 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 group :: Int -> [a] -> [[a]]
@@ -242,7 +241,7 @@ fstdays y = map toEnum ( map (`mod` 7) ((init . mtotals )y))
 fstday :: Month -> Year -> DayName
 fstday m y = (fstdays y ) !! (fromEnum m)
 
-day :: Day1 -> Month -> Year -> DayName
+day :: Day -> Month -> Year -> DayName
 day d m y = toEnum $ ( mod ((fromEnum (fstday m y)) + (fromEnum d) +6 ) 7 )
 
 
@@ -274,13 +273,13 @@ saveEvents path es = writeFile path $ unlines $ map show $ sortBy miord es
 
 
 --Preguntarle a novich  sobre ordenar esto
-eventsOnMonth :: [Evento] -> Month -> [Day1]
+eventsOnMonth :: [Evento] -> Month -> [Day]
 eventsOnMonth es m = foldl acum [] $ map dayZ $ filter (\e -> month e == m) es
 	where 
 		acum xs x = if not (elem x xs) then x:xs
 					else xs
 
-pix :: DayName -> Day1 -> [Day1] -> [Picture]
+pix :: DayName -> Day -> [Day] -> [Picture]
 pix d s ms = (replicate (fromEnum d) (row "   ") )++
 			 (map ache [1..s]) ++
 			 (replicate ( 6 - (mod ( (fromEnum d)+s + 6) 7 ) ) (row "   ") )
@@ -292,8 +291,12 @@ pix d s ms = (replicate (fromEnum d) (row "   ") )++
 			 			 	if n < 10 then row ("  " ++ (show n))
 			 							else row (" " ++ (show n))
 
-entries :: DayName -> Day1 -> [Day1] -> Picture
+entries :: DayName -> Day -> [Day] -> Picture
 entries dn d ds = tile $ group 7 $ pix dn d ds
+
+picture :: (Month,Year,DayName,Day,[Day]) -> Picture
+picture (m,y,d,s,ms) = heading m y `above` entries d s ms
+
 ---------------------------------------------------------------------------	
 
 -- AYUDA :(
@@ -308,13 +311,13 @@ helpPls = putStr x
 				\  d: eliminar un evento\n\
 				\  q: salir\n \n \n"
 
-currentDate = getCurrentTime >>= return. toGregorian . utctDay
+currentDate = TCLO.getCurrentTime >>= return. TCAL.toGregorian . TCLO.utctDay
 currentDate1 = do
-	a <- getCurrentTime
-	let (p,q,r) = toGregorian (utctDay a)
+	a <- TCLO.getCurrentTime
+	let (p,q,r) = TCAL.toGregorian ( TCLO.utctDay a)
 	let  x 		= read (show p) :: Year
 	let    y 	= read (show q) :: Int
-	let 	 z 	= read (show r) :: Day1
+	let 	 z 	= read (show r) :: Day
 	return ( x , mod (y+11) 12 ,z)
 
 nextM m = mod (fromEnum m + 1) 12
