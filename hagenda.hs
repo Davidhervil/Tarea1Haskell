@@ -353,7 +353,7 @@ prompt (y,m,d) =
 				(' ':show d)						++
 				"> ")
 
-subprompt (y,m,d) n list msj= do 
+descPrompt (y,m,d) n list msj= do 
 				let e = Evento {
 							year  = y,
 							month = toEnum m :: Month,
@@ -361,7 +361,11 @@ subprompt (y,m,d) n list msj= do
 							nth	  = n,
 							description = msj
 						}
-				return (list++[e])
+				list++[e]
+
+clearS = putStr (replicate 24 '\n')
+
+--removePrompt (y,m,d) n list r = do
 
 hacer n list (y,m,d)= do
 		-- teclas para movimientos y eventos
@@ -369,7 +373,7 @@ hacer n list (y,m,d)= do
 		let evnts = ['d','r']
 		-- Mostrar fecha actual
 		prompt (y,m,d)
-		-- Solicitar entrada del
+		-- Solicitar entrada del Usuario
 		s <- getChar
 		-- Colocar un salto de linea
 		putStrLn ""
@@ -381,10 +385,13 @@ hacer n list (y,m,d)= do
 			if elem s evnts then do
 				putStr "descr: "
 				msj <- getLine
-				list' <- subprompt (y,m,d) n list msj
+				let list' = descPrompt (y,m,d) n list msj
 				hacer (n+1) list' (y,m,d)
 			else
-				helpPls >> hacer n list (y,m,d)
+				if s == 'q' then
+					saveEvents "hagenda.txt" list
+				else
+					helpPls >> hacer n list (y,m,d)
 	 	
 		
 
