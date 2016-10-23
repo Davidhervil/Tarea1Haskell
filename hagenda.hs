@@ -322,24 +322,24 @@ currentDate = do
 move op (y,m,d)
 	| op == 'h' = 
 		if (prevM m > m) then
-			return (y-1,prevM m, d)
+			(y-1,prevM m, d)
 			else 
-			return (y, prevM m, d)
+			(y, prevM m, d)
 	| op == 'l'	= 		
 		if (nextM m < m) then 
-			return (y+1, nextM m, d)
+			(y+1, nextM m, d)
 			else
-				return (y,nextM m, d)
+				(y,nextM m, d)
 	| op == 'j' = 		
 		if (d-1 < 1) then
 			move 'h' (y,m,mlengths y !! (prevM m))
 			else 
-				return (y,m,d-1)
+				(y,m,d-1)
 	| otherwise = 		
 		if (d+1 > mlengths y !! m) then
 			move 'l' (y,m,1)
 			else 
-				return (y,m,d+1)
+				(y,m,d+1)
 	where
 		nextM m = mod (fromEnum m + 1) 12
 		prevM m = mod (fromEnum m + 11) 12
@@ -352,11 +352,8 @@ prompt (y,m,d) =
 			   (' ': (show (toEnum m :: Month))) 	++
 				(' ':show d)						++
 				"> ")
-		getChar
 
-subprompt (y,m,d) n list= do 
-				putStr "descr: "
-				msj <- getLine
+subprompt (y,m,d) n list msj= do 
 				let e = Evento {
 							year  = y,
 							month = toEnum m :: Month,
@@ -367,16 +364,24 @@ subprompt (y,m,d) n list= do
 				return (list++[e])
 
 hacer n list (y,m,d)= do
+		-- teclas para movimientos y eventos
 		let moves = ['j','k','l','h']
 		let evnts = ['d','r']
-		s <- prompt (y,m,d)
+		-- Mostrar fecha actual
+		prompt (y,m,d)
+		-- Solicitar entrada del
+		s <- getChar
+		-- Colocar un salto de linea
 		putStrLn ""
-		if elem s moves then do
-			(y1,m1,d1) <- move s (y,m,d)
-			hacer n list (y1,m1,d1)
+		-- Si el elemento esta en movimientos,
+		-- cosas cheveres
+		if elem s moves then
+			hacer n list (move s (y,m,d))
 		else
 			if elem s evnts then do
-				list' <- subprompt (y,m,d) n list
+				putStr "descr: "
+				msj <- getLine
+				list' <- subprompt (y,m,d) n list msj
 				hacer (n+1) list' (y,m,d)
 			else
 				helpPls >> hacer n list (y,m,d)
