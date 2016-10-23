@@ -292,6 +292,74 @@ entries :: DayName -> Day -> [Day] -> Picture
 entries dn d ds = tile $ group 7 $ pix dn d ds
 ---------------------------------------------------------------------------
 
+-- AYUDA :(
+helpPls :: IO ()
+helpPls = putStr x
+	where	x = "\nTeclas validas:\n\
+				\  j: retroceder un dia\n\
+				\  k: avanzar un dia\n\
+				\  h: retroceder un mes\n\
+				\  l: avanzar un mes\n\
+				\  r: registrar un evento\n\
+				\  d: eliminar un evento\n\
+				\  q: salir\n \n \n"
+
+currentDate = getCurrentTime >>= return. toGregorian . utctDay
+currentDate1 = do
+	a <- getCurrentTime
+	let (p,q,r) = toGregorian (utctDay a)
+	let  x 		= read (show p) :: Year
+	let    y 	= read (show q) :: Int
+	let 	 z 	= read (show r) :: Day1
+	return ( x , mod (y+11) 12 ,z)
+
+nextM m = mod (fromEnum m + 1) 12
+prevM m = mod (fromEnum m + 11) 12
+
+-- Mueve los meses
+moveM op (y,m,d) = if (op == 'l') then 
+						if (nextM m < m) then 
+							return (y+1, nextM m, d)
+						else
+							return (y,nextM m, d)
+					else
+						if (prevM m > m) then
+							return (y-1,prevM m, d)
+						else 
+							return (y, prevM m, d)
+
+-- Mueve los dias
+moveD op (y,m,d) = 
+	if  op == 'k' then
+		if (d+1 > mlengths y !! m) then
+			moveM 'l' (y,m,1)
+		else 
+			return (y,m,d+1)
+	else
+		if (d-1 < 1) then
+			moveM 'h' (y,m,mlengths y !! (prevM m))
+		else 
+			return (y,m,d-1)
+
+-- Toma una fecha y la muestra.
+prompt (y,m,d) = show y 							++ 
+				(' ': (show (toEnum m :: Month))) 	++
+				(' ':show d)						++
+				"> "
+
+subprompt = do 
+				putStr "descr: "
+				getLine
+
+
+
+
+
+
+
+
+
+
 a = pixel 'a'
 b = pixel 'b'
 c = pixel 'c'
