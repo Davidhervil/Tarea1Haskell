@@ -50,7 +50,7 @@ insert :: (String,Int) -> SuffixTree -> SuffixTree
 insert (s,i) (Leaf _) = error "Agregando en hojas"
 insert (s,i) (Node a) = if mismoPre == [] then Node ((s,Leaf i):a)
 						else
-							if (isLeaf.snd) found then 
+							if isLeaf found then 
 								Node (map replace a)
 							else
 								if resto /= [] then	
@@ -76,4 +76,12 @@ insert (s,i) (Node a) = if mismoPre == [] then Node ((s,Leaf i):a)
 		seguir e = if e == found then (fst e,insert (diff,i) (snd found))
 				   else e
 buildTree :: String -> SuffixTree
-buildTree s = foldl (flip insert) (Node []) (reverse (zip (suffixes s) [0..]))
+buildTree s = foldl (flip insert) (Node []) $ reverse $ zip (init $ suffixes s) [0..]
+
+foldlTree:: ( [String] -> (String,SuffixTree) -> [String]) -> [String] -> SuffixTree -> [String]
+foldlTree _ _ (Leaf _)    = error "no se puede hacer fold a una hoja"
+foldlTree _ b (Node [])   = b
+foldlTree f b (Node (t:ts)) = foldlTree f (f b t) (Node ts)
+
+longestRepeatedSubstring :: SuffixTree -> [String]
+longestRepeatedSubstring t = undefined
