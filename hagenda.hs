@@ -311,16 +311,18 @@ helpPls = putStr x
 				\  d: eliminar un evento\n\
 				\  q: salir\n \n \n"
 
-currentDate :: IO (Year, Int, Day)
+
+
+currentDate :: IO (Year, Month, Day)
 currentDate = do
 	a <- TCLO.getCurrentTime
 	let (p,q,r) = TCAL.toGregorian ( TCLO.utctDay a)
 	let  x 		= read (show p) :: Year
-	let    y 	= read (show q) :: Int
+	let    y 	= toEnum q 		:: Month
 	let 	 z 	= read (show r) :: Day
-	return ( x , mod (y+11) 12 ,z)
+	return ( x , toEnum (mod (q+11) 12) ,z)
 
-move :: Char -> (Year, Int, Day) -> (Year,Int,Day)
+move :: Char -> (Year, Month, Day) -> (Year,Month,Day)
 move op (y,m,d)
 	| op == 'h' = 
 		if (prevM m > m) then
@@ -334,33 +336,33 @@ move op (y,m,d)
 				(y,nextM m, mlengths y !! (nextM m))
 	| op == 'j' = 		
 		if (d-1 < 1) then
-			move 'h' (y,m,mlengths y !! (m))
+			move 'h' (y,m,mlengths y !! (fromEnum m))
 			else 
 				(y,m,d-1)
 	| otherwise = 		
-		if (d+1 > mlengths y !! m) 
+		if d+1 > mlengths y !! (fromEnum m) 
 			then
-				if m /= 11 then
+				if fromEnum m /= 11 then
 					(y,nextM m, 1)
 					else	
 						(y+1, nextM m,1)
 				else 
 				(y,m,d+1)
 	where
-		nextM m = mod (fromEnum m + 1) 12
-		prevM m = mod (fromEnum m + 11) 12
+		nextM m = toEnum $ mod (fromEnum m + 1) 12
+		prevM m = toEnum $ mod (fromEnum m + 11) 12
 
 
-prompt :: (Year, Int, Day) -> IO()
+prompt :: (Year, Month, Day) -> IO()
 prompt (y,m,d) = putStr (show y 				 	++ 
-			     (' ': (show (toEnum m :: Month))) 	++
+			     (' ': show m) 	++
 				 (' ':show d)						++
 				 "> ")
-descPrompt :: (Year, Int, Day) -> Int -> [Evento] -> [Char] -> [Evento]
+descPrompt :: (Year, Month, Day) -> Int -> [Evento] -> [Char] -> [Evento]
 descPrompt (y,m,d) n list msj= list ++ [e] 
 				where e = Evento {
 							year  = y,
-							month = toEnum m :: Month,
+							month = m,
 							dayZ  = d,
 							nth	  = n,
 							description = msj}
@@ -368,22 +370,22 @@ descPrompt (y,m,d) n list msj= list ++ [e]
 clearS :: IO ()
 clearS = putStr (replicate 24 '\n')
 
-removePrompt :: (Year, Int, Day) -> [Evento] -> Int -> [Evento]
+removePrompt :: (Year, Month, Day) -> [Evento] -> Int -> [Evento]
 removePrompt (y,m,d) list r  = filter (anotherD) list
 	where
-		anotherD a = (y,m,d) /= (year a, fromEnum (month a),dayZ a) ||
+		anotherD a = (y,m,d) /= (year a, month a,dayZ a) ||
 				 r /= nth a
 
-getMax4Day :: (Year, Int, Day) -> [Evento] -> Int
+getMax4Day :: (Year, Month, Day) -> [Evento] -> Int
 getMax4Day (y,m,d) []   = 1
 getMax4Day (y,m,d) list = maximum $ map nth (filter (sameD) list)
-	where sameD a = (y,m,d) == (year a, fromEnum (month a),dayZ a)
+	where sameD a = (y,m,d) == (year a, month a,dayZ a)
 
 getInt :: IO Int
 getInt = do str <- getLine
             return (read str)
 
-hacer :: [Evento] -> (Year, Int, Day) -> IO ()
+hacer :: [Evento] -> (Year, Month, Day) -> IO ()
 hacer list (y,m,d)= do
 	-- teclas para movimientos y eventos
 	let moves = ['j','k','l','h']
