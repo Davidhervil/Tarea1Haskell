@@ -311,8 +311,7 @@ helpPls = putStr x
 				\  d: eliminar un evento\n\
 				\  q: salir\n \n \n"
 
-currentDate = TCLO.getCurrentTime >>= return. TCAL.toGregorian . TCLO.utctDay
-currentDate1 = do
+currentDate = do
 	a <- TCLO.getCurrentTime
 	let (p,q,r) = TCAL.toGregorian ( TCLO.utctDay a)
 	let  x 		= read (show p) :: Year
@@ -320,40 +319,64 @@ currentDate1 = do
 	let 	 z 	= read (show r) :: Day
 	return ( x , mod (y+11) 12 ,z)
 
-nextM m = mod (fromEnum m + 1) 12
-prevM m = mod (fromEnum m + 11) 12
-
--- Mueve los meses
-moveM op (y,m,d) = if (op == 'l') then 
-						if (nextM m < m) then 
-							return (y+1, nextM m, d)
-						else
-							return (y,nextM m, d)
-					else
-						if (prevM m > m) then
-							return (y-1,prevM m, d)
-						else 
-							return (y, prevM m, d)
-
--- Mueve los dias
-moveD op (y,m,d) = 
-	if  op == 'k' then
-		if (d+1 > mlengths y !! m) then
-			moveM 'l' (y,m,1)
-		else 
-			return (y,m,d+1)
-	else
+move op (y,m,d)
+	| op == 'h' = 
+		if (prevM m > m) then
+			return (y-1,prevM m, d)
+			else 
+			return (y, prevM m, d)
+	| op == 'l'	= 		
+		if (nextM m < m) then 
+			return (y+1, nextM m, d)
+			else
+				return (y,nextM m, d)
+	| op == 'j' = 		
 		if (d-1 < 1) then
-			moveM 'h' (y,m,mlengths y !! (prevM m))
-		else 
-			return (y,m,d-1)
+			move 'h' (y,m,mlengths y !! (prevM m))
+			else 
+				return (y,m,d-1)
+	| otherwise = 		
+		if (d+1 > mlengths y !! m) then
+			move 'l' (y,m,1)
+			else 
+				return (y,m,d+1)
+	where
+		nextM m = mod (fromEnum m + 1) 12
+		prevM m = mod (fromEnum m + 11) 12
+
 
 -- Toma una fecha y la muestra.
-prompt (y,m,d) = show y 							++ 
-				(' ': (show (toEnum m :: Month))) 	++
+prompt (y,m,d) =
+	do 
+		putStr (show y 							++ 
+			   (' ': (show (toEnum m :: Month))) 	++
 				(' ':show d)						++
-				"> "
+				"> ")
+		getChar
 
-subprompt = do 
+subprompt (y,m,d) n list= do 
 				putStr "descr: "
-				getLine
+				msj <- getLine
+				let e = Evento {
+							year  = y,
+							month = toEnum m :: Month,
+							dayZ  = d,
+							nth	  = n,
+							description = msj
+						}
+				return (list++[e])
+
+hacer (y,m,d) n list= do
+		s <- prompt (y,m,d)
+		putStrLn ""
+		(y1,m1,d1) <- move s (y,m,d)
+		if elem s moves then
+			hacer (y1,m1,d1) n list
+		else
+			hacer (y,m,d) n list
+	where moves = ['j','k','l','h']
+
+main = hacer(1995,1,1) 1 []
+	-- Buscamos la fecha actual al principio del programa
+--	(y,m,d) <- currentDate
+
