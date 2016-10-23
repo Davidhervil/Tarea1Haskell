@@ -361,13 +361,18 @@ descPrompt (y,m,d) n list msj= list ++ [e]
 
 clearS = putStr (replicate 24 '\n')
 
-removePrompt list r = filter ( (r/=).nth) list
-
+removePrompt (y,m,d) list r  = filter (otro) list
+	where
+		otro a = (y /= year a)  			 || 
+				 (m /= fromEnum (month a))   || 
+				 (d /= dayZ a)  			 ||
+				 r /= nth a
+				 
 getInt :: IO Int
 getInt = do str <- getLine
             return (read str)
 
-hacer n list (y,m,d)= do
+hacer list (y,m,d)= do
 	-- teclas para movimientos y eventos
 	let moves = ['j','k','l','h']
 	let evnts = ['d','r']
@@ -379,28 +384,29 @@ hacer n list (y,m,d)= do
 	putStrLn ""
 	-- Si el elemento esta en movimiento
 	if elem s moves then
-		hacer n list (move s (y,m,d))
+		hacer list (move s (y,m,d))
 	else
 		-- registrar
 		if s == 'r' then do
 			putStr "descr: "
 			msj <- getLine
-			let list' = descPrompt (y,m,d) n list msj
-			hacer (n+1) list' (y,m,d)
+			let n =  maximum (map nth list)
+			let list' = descPrompt (y,m,d) (n+1) list msj
+			hacer list' (y,m,d)
 		else
 			if s == 'd' then do
 					i <- getInt
-					let list' = removePrompt list i
-					hacer n list' (y,m,d)
+					let list' = removePrompt (y,m,d) list i
+					hacer list' (y,m,d)
 			else
 				if s == 'q' then
 					saveEvents "hagenda.txt" list
 				else
-					helpPls >> hacer n list (y,m,d)
+					helpPls >> hacer list (y,m,d)
 	 	
 		
 
-main = currentDate >>= hacer  1 []
+main = currentDate >>= hacer []
 	-- Buscamos la fecha actual al principio del programa
 --	(y,m,d) <- currentDate
 
