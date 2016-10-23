@@ -366,17 +366,24 @@ subprompt (y,m,d) n list= do
 						}
 				return (list++[e])
 
-hacer (y,m,d) n list= do
+hacer n list (y,m,d)= do
+		let moves = ['j','k','l','h']
+		let evnts = ['d','r']
 		s <- prompt (y,m,d)
 		putStrLn ""
-		(y1,m1,d1) <- move s (y,m,d)
-		if elem s moves then
-			hacer (y1,m1,d1) n list
+		if elem s moves then do
+			(y1,m1,d1) <- move s (y,m,d)
+			hacer n list (y1,m1,d1)
 		else
-			hacer (y,m,d) n list
-	where moves = ['j','k','l','h']
+			if elem s evnts then do
+				list' <- subprompt (y,m,d) n list
+				hacer (n+1) list' (y,m,d)
+			else
+				helpPls >> hacer n list (y,m,d)
+	 	
+		
 
-main = hacer(1995,1,1) 1 []
+main = currentDate >>= hacer  1 []
 	-- Buscamos la fecha actual al principio del programa
 --	(y,m,d) <- currentDate
 
