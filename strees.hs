@@ -46,6 +46,10 @@ bananatree = Node [("banana", Leaf 0),
 					("na", Node [("na", Leaf 2),
 					("", Leaf 4)])]
 
+isLeaf :: (a,SuffixTree) -> Bool
+isLeaf (_,Leaf _) = True
+isLeaf (_,_)      = False
+
 insert :: (String,Int) -> SuffixTree -> SuffixTree
 insert (s,i) (Leaf _) = error "Agregando en hojas"
 insert (s,i) (Node a) = if mismoPre == [] then Node ((s,Leaf i):a)
@@ -62,8 +66,6 @@ insert (s,i) (Node a) = if mismoPre == [] then Node ((s,Leaf i):a)
 		comunes _ [] = []
 		comunes (s1:ss1) (s2:ss2) = if s1 == s2 then s1:(comunes ss1 ss2)
 									else []
-		isLeaf (_,Leaf _) = True
-		isLeaf   (_,_)    = False
 		mismoPre = [ n | n <- a, fst n /= "",(head.fst) n == head s ]
 		found = head mismoPre
 		comun = comunes s (fst found)
@@ -75,13 +77,22 @@ insert (s,i) (Node a) = if mismoPre == [] then Node ((s,Leaf i):a)
 				 else e
 		seguir e = if e == found then (fst e,insert (diff,i) (snd found))
 				   else e
+
 buildTree :: String -> SuffixTree
 buildTree s = foldl (flip insert) (Node []) $ reverse $ zip (init $ suffixes s) [0..]
 
-foldlTree:: ( [String] -> (String,SuffixTree) -> [String]) -> [String] -> SuffixTree -> [String]
-foldlTree _ _ (Leaf _)    = error "no se puede hacer fold a una hoja"
-foldlTree _ b (Node [])   = b
-foldlTree f b (Node (t:ts)) = foldlTree f (f b t) (Node ts)
-
 longestRepeatedSubstring :: SuffixTree -> [String]
-longestRepeatedSubstring t = undefined
+longestRepeatedSubstring (Leaf _)   = []
+longestRepeatedSubstring (Node st ) = fst $ foldl look ([],[]) st
+	where
+		look (lrss,path) (_,Leaf _) = (lrss,path)
+		look (lrss,path) (l,Node t)
+			| lrss == [] = (fst $ foldl look ([l],l) t,path)
+			| lrss /= [] = 
+				if length (head lrss) < (length path) + (length l) then
+					(fst $ foldl look ([path ++ l],path ++ l) t , path)
+				else
+					if length (head lrss) == (length path) + (length l) then
+						(fst $ foldl look ((path ++ l):lrss,path ++ l) t,path)
+					else
+						(fst $ foldl look (lrss,path ++ l) t,path)
