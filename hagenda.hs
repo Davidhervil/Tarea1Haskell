@@ -334,13 +334,17 @@ move op (y,m,d)
 				(y,nextM m, mlengths y !! (nextM m))
 	| op == 'j' = 		
 		if (d-1 < 1) then
-			move 'h' (y,m,mlengths y !! (prevM m))
+			move 'h' (y,m,mlengths y !! (m))
 			else 
 				(y,m,d-1)
 	| otherwise = 		
-		if (d+1 > mlengths y !! m) then
-			move 'l' (y,m,1)
-			else 
+		if (d+1 > mlengths y !! m) 
+			then
+				if m /= 11 then
+					(y,nextM m, 1)
+					else	
+						(y+1, nextM m,1)
+				else 
 				(y,m,d+1)
 	where
 		nextM m = mod (fromEnum m + 1) 12
