@@ -361,7 +361,7 @@ prompt (y,m,d) = putStr (show y 				 	++
 				 (' ':show d)						++
 				 "> ")
 descPrompt :: (Year, Month, Day) -> Int -> [Evento] -> [Char] -> [Evento]
-descPrompt (y,m,d) n list msj= list ++ [e] 
+descPrompt (y,m,d) n list msj = list ++ [e] 
 				where e = Evento {
 							year  = y,
 							month = m,
@@ -388,7 +388,12 @@ getInt = do str <- getLine
             return (read str)
 
 actual :: (Year,Month,Day) -> [Evento] -> Picture
-actual (y,m,d) lista = picture(m,y,fstday m y,(mlengths y) !! fromEnum m, eventsOnMonth (eventsOnYear lista y) m)
+actual (y,m,d) lista = picture(m ,
+							   y ,
+							   fstday m y,
+							   (mlengths y) !! fromEnum m,
+							   eventsOnMonth (eventsOnYear lista y) m
+							  )
 
 hacer :: [Evento] -> (Year, Month, Day) -> IO ()
 hacer list (y,m,d)= do
