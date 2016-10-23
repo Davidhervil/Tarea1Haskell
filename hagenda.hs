@@ -346,47 +346,52 @@ move op (y,m,d)
 
 
 -- Toma una fecha y la muestra.
-prompt (y,m,d) =
-	do 
-		putStr (show y 							++ 
-			   (' ': (show (toEnum m :: Month))) 	++
-				(' ':show d)						++
-				"> ")
+prompt (y,m,d) = putStr (show y 				 	++ 
+			     (' ': (show (toEnum m :: Month))) 	++
+				 (' ':show d)						++
+				 "> ")
 
-descPrompt (y,m,d) n list msj= do 
-				let e = Evento {
+descPrompt (y,m,d) n list msj= list ++ [e] 
+				where e = Evento {
 							year  = y,
 							month = toEnum m :: Month,
 							dayZ  = d,
 							nth	  = n,
-							description = msj
-						}
-				list++[e]
+							description = msj}
 
 clearS = putStr (replicate 24 '\n')
 
---removePrompt (y,m,d) n list r = do
+removePrompt list r = filter ( (r/=).nth) list
+
+getInt :: IO Int
+getInt = do str <- getLine
+            return (read str)
 
 hacer n list (y,m,d)= do
-		-- teclas para movimientos y eventos
-		let moves = ['j','k','l','h']
-		let evnts = ['d','r']
-		-- Mostrar fecha actual
-		prompt (y,m,d)
-		-- Solicitar entrada del Usuario
-		s <- getChar
-		-- Colocar un salto de linea
-		putStrLn ""
-		-- Si el elemento esta en movimientos,
-		-- cosas cheveres
-		if elem s moves then
-			hacer n list (move s (y,m,d))
+	-- teclas para movimientos y eventos
+	let moves = ['j','k','l','h']
+	let evnts = ['d','r']
+	-- Mostrar fecha actual
+	prompt (y,m,d)
+	-- Solicitar entrada del Usuario
+	s <- getChar
+	-- Colocar un salto de linea
+	putStrLn ""
+	-- Si el elemento esta en movimiento
+	if elem s moves then
+		hacer n list (move s (y,m,d))
+	else
+		-- registrar
+		if s == 'r' then do
+			putStr "descr: "
+			msj <- getLine
+			let list' = descPrompt (y,m,d) n list msj
+			hacer (n+1) list' (y,m,d)
 		else
-			if elem s evnts then do
-				putStr "descr: "
-				msj <- getLine
-				let list' = descPrompt (y,m,d) n list msj
-				hacer (n+1) list' (y,m,d)
+			if s == 'd' then do
+					i <- getInt
+					let list' = removePrompt list i
+					hacer n list' (y,m,d)
 			else
 				if s == 'q' then
 					saveEvents "hagenda.txt" list
