@@ -3,10 +3,13 @@ import System.Directory
 import qualified Data.Time.Clock as TCLO
 import qualified Data.Time.Calendar as TCAL
 
+-- Type
 type Day   = Int
--- Suponga que est· entre 1 y 31
 type Year  = Int
--- Suponga que es positivo
+type Height  = Int
+type Width   = Int
+
+-- Data 
 data Month = Enero
 			| Febrero
 			| Marzo
@@ -28,58 +31,63 @@ data DayName = Domingo
 			| Viernes
 			| Sabado
 	deriving (Bounded,Show,Eq,Ord,Enum,Read)
-type Height  = Int
-type Width   = Int
 data Picture = Picture {
 					height :: Height,
 					width  :: Width,
 					pixels :: [[Char]]
-					} deriving (Show)
+					} 
+	deriving (Show)
 
 data Evento = Evento {
-			year:: Year,
-			month:: Month,
-			dayZ:: Day,
-			nth	:: Int,
-			description :: String
+					year:: Year,
+					month:: Month,
+					dayZ:: Day,
+					nth	:: Int,
+					description :: String
 			}
-			deriving (Show,Read)
+	deriving (Show,Read)
+
+
 
 -- |La funcion 'pixel' devuleve un 'Picture' dado un 'Char'.
 pixel :: Char -> Picture
-pixel c = Picture { height=1, width=1, pixels = [[c]]}
+pixel c = Picture { height = 1, width = 1, pixels = [[c]]}
 
 -- |'above' toma dos 'Picture', p0 y p1 y genera otro 'Picture' cuyo 'pixels'
 -- tendrá a p0 "arriba" de p1.
+
+
 above :: Picture -> Picture -> Picture
 above p0 p1  = if width p0 == width p1 then
-					Picture { height= height p0 + width p1,
-							 width= width p0,
-							 pixels = pixels p0 ++ pixels p1 
+					Picture { height = height p0 + width p1,
+							 width   = width p0,
+							 pixels  = pixels p0 ++ pixels p1 
 							}
 				else
 					error "can’t ’above’ different widths"
+
+
 -- |'beside' toma dos 'Picture', p0 y p1 y genera otro 'Picture'cuyo 'pixels'
 -- tendrá a p0 a la izqueirda de p1.
 beside :: Picture -> Picture -> Picture
 beside p0 p1 = if height p0 == height p1 then
-					Picture { height= height p0,
-						 	  width= width p0 + width p1,
+					Picture { height = height p0,
+						 	  width  = width  p0 + width p1,
 							  pixels = beside' (pixels p0) (pixels p1)
 							}
 				else 
 					error "can’t ’beside’ different height"
 				where 
-					beside' []      xs2  = xs2
-					beside' xs1      []  = xs1
-					beside' (x:xs1) (x2:xs2) = (x ++ x2):beside' xs1 xs2
-
+					beside'   []      xs2  	 = xs2
+					beside'   xs1      []  	 = xs1
+					beside' (x:xs1) (x2:xs2) = (x ++ x2) : 
+											   beside' xs1 xs2
 
 -- |'toString' dvuelve un 'String' "listo para printear" dado un 'Picture'.
 -- Notar que antes era un 'intercalate "\n" . pixels'. Lo que deja sin '\n' al
 -- final.
 toString :: Picture -> String
-toString = concatMap (++"\n") . pixels 
+toString = concatMap ( ++ "\n") . pixels 
 
 -- |'stack' toma una lista de 'Picture' y retorna un 'Picture' con el resultado
 -- de haber apilado las "imágenes" con el primero elemento en el tope.
@@ -131,7 +139,7 @@ stackWith = (foldl1 above .) . chevrFunc . (interspersex .) . (. (width . head))
 		--  stackWith h ps = foldl1 above ( (interspersex . ( ( (. (width . head) ) 
 		--								   . (curry blank) ) h ) ) ps ps 
 		--								  )
-		chevrFunc::(a-> a-> b) -> a -> b
+		chevrFunc::(a -> a -> b) -> a -> b
 		chevrFunc f a = f a a
 
 		-- |Esta función es nuestra reimplementación de 'intersperse'
@@ -157,7 +165,7 @@ spreadWith = (foldl1 beside .) . chevrFunc . (interspersex .) . (. (height . hea
 		-- |Esta función fue implementada para poder lograr la forma pointfree
 		-- puesto hacia  falta convertir en un sólo parametro los ps de la
 		-- expresión análoga en stackWith
-		chevrFunc::(a-> a-> b) -> a -> b
+		chevrFunc::(a -> a -> b) -> a -> b
 		chevrFunc f a = f a a
 
 		-- |Esta función es nuestra reimplementación de 'intersperse'
@@ -165,7 +173,7 @@ spreadWith = (foldl1 beside .) . chevrFunc . (interspersex .) . (. (height . hea
 		interspersex :: a -> [a] -> [a]
 		interspersex a xs = tail $ foldr f [] xs
 			where
-				f x ls = a:(x:ls)
+				f x ls = a : (x : ls)
 
 -- |'tile' toma una mtariz de de 'Picture' y retorna un 'Picture' 
 -- con el resultado de unir todas las imágenes de la matriz.
@@ -195,29 +203,31 @@ dnames = beside (pixel ' ') $ spreadWith 1 $ map (row.(take 2).show.cast) [0..6]
 
 -- |
 banner :: Month -> Year -> Picture
---banner m y = row (rjustify (width dnames) (toString (spreadWith 1 [(row . show) m, (row . show) y])))
-banner m y = row (rjustify (width dnames ) (show m ++ (' ':show y)))
-
+banner m y   = row (rjustify (width dnames ) (show m ++ (' ':show y)))
 
 -- |
 heading :: Month -> Year -> Picture
 heading m y = banner m y `above` dnames
 
-
---------------------------------------------------------------------------------------
-
+-- | holas
 leap :: Year -> Bool
-leap y = if (mod y 100) == 0 then (mod y 400) == 0 else (mod y 4) == 0
+leap y = if (mod y 100) == 0 then 
+			(mod y 400) == 0 
+		 else 
+			(mod y 4)   == 0
 
+-- |
 mlengths  :: Year -> [Day]
-mlengths y = [31, if leap y then 29 else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+mlengths y = [31, a, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+	where a = if leap y then 29 else 28
 
+-- |
 group :: Int -> [a] -> [[a]]
 group _ [] = []
 group n xs
-  | n > 0 = (take n xs) : (group n (drop n xs))
+  | n > 0 	  = (take n xs) : (group n (drop n xs))
   | otherwise = error "N no positivo"
-
+-- |
 jan1 :: Year -> DayName
 jan1 y = toEnum  (mod
 					(
@@ -227,61 +237,56 @@ jan1 y = toEnum  (mod
 			 		div (y - 1) 400   -
 			 		div (y - 1) 100 )
 			 		7)
-				
---      Domingo es cero
--- 		Multiplicamos el numero de años que han pasado
--- 		Sumamos los años bisiestos 
 
+-- |
 mtotals :: Year -> [Int]
-mtotals y = scanl (+) (fromEnum (jan1 y)) b
+mtotals y = scanl  (+) (fromEnum (jan1 y)) b
 			where b = mlengths y
 
+-- |
 fstdays :: Year -> [DayName]
 fstdays y = map toEnum ( map (`mod` 7) ((init . mtotals )y))
+-- |
 
 fstday :: Month -> Year -> DayName
 fstday m y = (fstdays y ) !! (fromEnum m)
+-- |
 
 day :: Day -> Month -> Year -> DayName
-day d m y = toEnum $ ( mod ((fromEnum (fstday m y)) + (fromEnum d) +6 ) 7 )
+day d m y = toEnum $ ( mod ((fromEnum (fstday m y)) + (fromEnum d) + 6 ) 7 )
 
-
----------------------------------------------------------------------------
-
+-- |
 miord :: Evento -> Evento -> Ordering
-miord e1 e2 = if dias1 < dias2 then LT
-			  else 
-			  	if dias1 > dias2 then GT
+miord e1 e2 = if a < b then LT
+			  else
+			  	if a > b then GT
 			  	else
-			  		if nth e1 < nth e2 then LT
-			  		else 
-			  			if nth e1 > nth e2 then GT
-			  			else 
-			  				EQ
-			  where 
-			  	dias1 = year e1 * 365 + (fromEnum(month e1)) * 30 + (dayZ e1)
-			  	dias2 = year e2 * 365 + (fromEnum(month e2)) * 30 + (dayZ e2)
+			  		EQ
+		where 
+			a = (year e1, month e1, dayZ e1)
+			b = (year e2, month e2, dayZ e2)
 
+-- |
 loadEvents :: FilePath -> IO [Evento]
 loadEvents pathName = do 
 	s <-readFile pathName
 	return ( sortBy miord (((map castlE).lines) s))
 	where
 		castlE s = read s :: Evento
-
+-- |
 saveEvents :: FilePath -> [Evento] -> IO ()
 saveEvents path es = writeFile path $ unlines $ map show $ sortBy miord es
-
+-- |
 eventsOnYear :: [Evento] -> Year -> [Evento]
 eventsOnYear es y = filter (\e -> year e == y) es
 
---Preguntarle a novich  sobre ordenar esto
+-- |
 eventsOnMonth :: [Evento] -> Month -> [Day]
 eventsOnMonth es m = foldl acum [] $ map dayZ $ filter (\e -> month e == m) es
 	where 
 		acum xs x = if not (elem x xs) then x:xs
 					else xs
-
+-- |
 pix :: DayName -> Day -> [Day] -> [Picture]
 pix d s ms = (replicate (fromEnum d) (row "   ") )++
 			 (map ache [1..s]) ++
@@ -293,16 +298,14 @@ pix d s ms = (replicate (fromEnum d) (row "   ") )++
 			 			 else
 			 			 	if n < 10 then row ("  " ++ (show n))
 			 							else row (" " ++ (show n))
-
+-- |
 entries :: DayName -> Day -> [Day] -> Picture
 entries dn d ds = tile $ group 7 $ pix dn d ds
-
+-- |
 picture :: (Month,Year,DayName,Day,[Day]) -> Picture
 picture (m,y,d,s,ms) = heading m y `above` entries d s ms
 
----------------------------------------------------------------------------	
-
--- AYUDA :(
+-- |
 helpPls :: IO ()
 helpPls = putStr x
 	where	x = "\nTeclas validas:\n\
@@ -315,7 +318,7 @@ helpPls = putStr x
 				\  q: salir\n \n \n"
 
 
-
+-- |
 currentDate :: IO (Year, Month, Day)
 currentDate = do
 	a <- TCLO.getCurrentTime
@@ -324,7 +327,7 @@ currentDate = do
 	let    y 	= toEnum q 		:: Month
 	let 	 z 	= read (show r) :: Day
 	return ( x , toEnum (mod (q+11) 12) ,z)
-
+-- |
 move :: Char -> (Year, Month, Day) -> (Year,Month,Day)
 move op (y,m,d)
 	| op == 'h' = 
@@ -355,12 +358,14 @@ move op (y,m,d)
 		nextM m = toEnum $ mod (fromEnum m + 1) 12
 		prevM m = toEnum $ mod (fromEnum m + 11) 12
 
-
+-- |
 prompt :: (Year, Month, Day) -> IO()
 prompt (y,m,d) = putStr (show y 				 	++ 
 			     (' ': show m) 	++
 				 (' ':show d)						++
 				 "> ")
+
+-- |
 descPrompt :: (Year, Month, Day) -> Int -> [Evento] -> [Char] -> [Evento]
 descPrompt (y,m,d) n list msj= list ++ [e] 
 				where e = Evento {
@@ -369,45 +374,45 @@ descPrompt (y,m,d) n list msj= list ++ [e]
 							dayZ  = d,
 							nth	  = n,
 							description = msj}
-
+-- |
 clearS :: IO ()
 clearS = putStr (replicate 24 '\n')
-
+-- |
 removePrompt :: (Year, Month, Day) -> [Evento] -> Int -> [Evento]
 removePrompt (y,m,d) list r  = filter (anotherD) list
 	where
 		anotherD a = (y,m,d) /= (year a, month a,dayZ a) ||
 				 r /= nth a
-
+-- |
 getMax4Day :: (Year, Month, Day) -> [Evento] -> Int
 getMax4Day (y,m,d) []   = 0
 getMax4Day (y,m,d) list = maximum $ map nth (filter (sameD) (list))
 	where sameD a = (y,m,d) == (year a, month a,dayZ a)
-
+-- |
 getInt :: IO Int
 getInt = do str <- getLine
             return (read str)
-
+-- |
 actual :: (Year,Month,Day) -> [Evento] -> Picture
 actual (y,m,d) lista = picture(m,y,fstday m y,(mlengths y) !! fromEnum m, eventsOnMonth (eventsOnYear lista y) m)
-
+-- |
 todayEvents :: (Year,Month,Day) -> [Evento] -> [Evento]
 todayEvents (y,m,d) []   =  []
 todayEvents (y,m,d) list = filter sameD list 
 	where sameD a = (y,m,d) == (year a, month a,dayZ a)
 
---
+-- |
 todayAgenda:: [Evento] -> IO ()
 todayAgenda [] = do putStrLn ""
 todayAgenda (e:es) = do
     putStrLn $ "Evento Nro: " ++ (show $ nth e)
     putStrLn $ "Descripción " ++ (description e)
     todayAgenda es
-
+-- |
 mostrarHoy :: [Evento] -> IO ()
 mostrarHoy [] = do putStrLn "Por ahora no tiene eventos hoy."
 mostrarHoy es = do putStrLn "Eventos de hoy: " >> todayAgenda es    
-
+-- |
 hacer :: [Evento] -> (Year, Month, Day) -> IO ()
 hacer list (y,m,d)= do
 	-- teclas para movimientos y eventos
