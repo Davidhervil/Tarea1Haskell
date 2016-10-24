@@ -410,15 +410,9 @@ todayAgenda (e:es) = do
     todayAgenda es
 -- |
 mostrarHoy :: [Evento] -> IO ()
-<<<<<<< HEAD
-mostrarHoy [] = do putStrLn "Por ahora no tiene eventos hoy."
-mostrarHoy es = do putStrLn "Eventos de hoy: " >> todayAgenda es    
--- |
-=======
 mostrarHoy [] = do putStrLn "No tiene eventos este día."
 mostrarHoy es = do putStrLn "Eventos del día: " >> todayAgenda es    
 
->>>>>>> 483f7dc17ab969eb9b33dad519d6c5f7096d0997
 hacer :: [Evento] -> (Year, Month, Day) -> IO ()
 hacer list (y,m,d)= do
 	-- teclas para movimientos y eventos
