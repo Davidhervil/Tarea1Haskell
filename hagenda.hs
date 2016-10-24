@@ -477,7 +477,7 @@ hacer list (y,m,d)= do
 	else
 		-- registrar
 		if s == 'r' then do
-			putStr "Coloue descripción: "
+			putStr "Coloque descripción: "
 			msj  	 <- getLine
 			let n 	  = getMax4Day (y, m, d) list
 			let list' = descPrompt (y, m, d) (n + 1) list msj
