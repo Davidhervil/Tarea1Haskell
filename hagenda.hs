@@ -1,5 +1,5 @@
 import Data.List (sortBy)
-import qualified Data.Time as TTT
+import System.Directory
 import qualified Data.Time.Clock as TCLO
 import qualified Data.Time.Calendar as TCAL
 
@@ -433,11 +433,14 @@ hacer list (y,m,d)= do
 				else
 					helpPls >> hacer list (y,m,d)
 
- 	
-readHandler :: IOError -> IO ()
-readHandler a = putStrLn "File doesn't exists" 
 
-main = do 
-	c <- currentDate
-	list <- loadEvents "hagenda.txt" 
-	hacer [] c
+main = do
+		c <- currentDate
+		exists <- doesFileExist "hagenda.txt"
+ 		if exists then do
+			list <- loadEvents "hagenda.txt"
+			hacer list c
+		else 
+			hacer [] c
+
+
