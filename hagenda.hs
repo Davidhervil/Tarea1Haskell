@@ -265,7 +265,9 @@ day d m y = toEnum $ ( mod ((fromEnum (fstday m y)) + (fromEnum d) + 6 ) 7 )
 -- | 'miord' recibe dos eventos y determina cuál es mas antiguo
 miord :: Evento -> Evento -> Ordering
 miord e1 e2 = if a < b then LT
-			  else GT
+			  else 
+			  	if a > b then GT
+			  	else EQ
 		where 
 			a = (year e1, month e1, dayZ e1, nth e1)
 			b = (year e2, month e2, dayZ e2, nth e2)
