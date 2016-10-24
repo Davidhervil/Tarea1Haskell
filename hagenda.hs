@@ -270,7 +270,7 @@ miord e1 e2 = if a < b then LT
 loadEvents :: FilePath -> IO [Evento]
 loadEvents pathName = do 
 	s <-readFile pathName
-	return ( sortBy miord (((map castlE).lines) s))
+	return ( sortBy miord (((map castlE) . lines) s))
 	where
 		castlE s = read s :: Evento
 -- |
@@ -278,29 +278,35 @@ saveEvents :: FilePath -> [Evento] -> IO ()
 saveEvents path es = writeFile path $ unlines $ map show $ sortBy miord es
 -- |
 eventsOnYear :: [Evento] -> Year -> [Evento]
-eventsOnYear es y = filter (\e -> year e == y) es
+eventsOnYear es y  = filter (\e -> year e == y) es
 
 -- |
 eventsOnMonth :: [Evento] -> Month -> [Day]
 eventsOnMonth es m = foldl acum [] $ map dayZ $ filter (\e -> month e == m) es
 	where 
-		acum xs x = if not (elem x xs) then x:xs
-					else xs
+		acum xs x  = if not (elem x xs) then x : xs
+					 else xs
+
 -- |
 pix :: DayName -> Day -> [Day] -> [Picture]
-pix d s ms = (replicate (fromEnum d) (row "   ") )++
+pix d s ms = (replicate (fromEnum d) (row "   ") ) ++
 			 (map ache [1..s]) ++
-			 (replicate ( 6 - (mod ( (fromEnum d)+s + 6) 7 ) ) (row "   ") )
+			 (replicate ( 6 - (mod ( (fromEnum d) + s + 6) 7 ) ) (row "   ") )
 			 where
 			 	ache n = if elem n ms then
-			 							if n < 10 then row ( "> " ++ (show n))
-			 							else row (">" ++ (show n))
+			 				if n < 10 then
+			 					row ( "> " ++ (show n))
+			 				else 
+			 					row ( ">"  ++ (show n))
 			 			 else
-			 			 	if n < 10 then row ("  " ++ (show n))
-			 							else row (" " ++ (show n))
+			 			 	if n < 10 then 
+			 			 		row ( "  " ++ (show n))
+			 				else 
+			 					row ( " "  ++ (show n))
+
 -- |
 entries :: DayName -> Day -> [Day] -> Picture
-entries dn d ds = tile $ group 7 $ pix dn d ds
+entries dn d ds 	 = tile $ group 7 $ pix dn d ds
 -- |
 picture :: (Month,Year,DayName,Day,[Day]) -> Picture
 picture (m,y,d,s,ms) = heading m y `above` entries d s ms
@@ -321,115 +327,119 @@ helpPls = putStr x
 -- |
 currentDate :: IO (Year, Month, Day)
 currentDate = do
-	a <- TCLO.getCurrentTime
-	let (p,q,r) = TCAL.toGregorian ( TCLO.utctDay a)
+	a 		   <- TCLO.getCurrentTime
+	let (p,q,r) = TCAL.toGregorian (TCLO.utctDay a)
 	let  x 		= read (show p) :: Year
 	let    y 	= toEnum q 		:: Month
 	let 	 z 	= read (show r) :: Day
-	return ( x , toEnum (mod (q+11) 12) ,z)
+	return (x , toEnum (mod (q + 11) 12) , z)
+
 -- |
 move :: Char -> (Year, Month, Day) -> (Year,Month,Day)
 move op (y,m,d)
 	| op == 'h' = 
 		if (prevM m > m) then
-			(y-1,prevM m, d)
+			(y-1, prevM m, d)
 			else 
 			(y, prevM m, mlengths y !! (prevM m))
 	| op == 'l'	= 		
 		if (nextM m < m) then 
 			(y+1, nextM m, d)
 			else
-				(y,nextM m, mlengths y !! (nextM m))
+				(y, nextM m, mlengths y !! (nextM m))
 	| op == 'j' = 		
 		if (d-1 < 1) then
-			move 'h' (y,m,mlengths y !! (fromEnum m))
+			move 'h' (y, m, mlengths y !! (fromEnum m))
 			else 
-				(y,m,d-1)
+				(y, m, d-1)
 	| otherwise = 		
 		if d+1 > mlengths y !! (fromEnum m) 
 			then
 				if fromEnum m /= 11 then
-					(y,nextM m, 1)
+					(y, nextM m, 1)
 					else	
 						(y+1, nextM m,1)
 				else 
-				(y,m,d+1)
+				(y, m, d+1)
 	where
 		nextM m = toEnum $ mod (fromEnum m + 1) 12
 		prevM m = toEnum $ mod (fromEnum m + 11) 12
 
 -- |
 prompt :: (Year, Month, Day) -> IO()
-prompt (y,m,d) = putStr (show y 				 	++ 
-			     (' ': show m) 	++
-				 (' ':show d)						++
-				 "> ")
+prompt (y,m,d) = putStr (	   show y   ++ 
+			     		(' ' : show m) 	++
+				 		(' ' : show d)	++
+				 		"> ")
 
 -- |
 descPrompt :: (Year, Month, Day) -> Int -> [Evento] -> [Char] -> [Evento]
-descPrompt (y,m,d) n list msj= list ++ [e] 
-				where e = Evento {
-							year  = y,
-							month = m,
-							dayZ  = d,
-							nth	  = n,
-							description = msj}
+descPrompt (y, m, d) n list msj  = list ++ [e] 
+	where e = Evento {
+				year  		= y,
+				month 		= m,
+				dayZ  		= d,
+				nth	  		= n,
+				description = msj
+			  }
+
 -- |
 clearS :: IO ()
 clearS = putStr (replicate 24 '\n')
 -- |
 removePrompt :: (Year, Month, Day) -> [Evento] -> Int -> [Evento]
-removePrompt (y,m,d) list r  = filter (anotherD) list
+removePrompt (y, m, d) list r  = filter (anotherD) list
 	where
-		anotherD a = (y,m,d) /= (year a, month a,dayZ a) ||
-				 r /= nth a
+		anotherD a  = (y,m,d) /= (year a, month a,dayZ a) ||
+				 	  	 r    /=  nth  a
+
 -- |
 getMax4Day :: (Year, Month, Day) -> [Evento] -> Int
-getMax4Day (y,m,d) []   = 0
-getMax4Day (y,m,d) list = maximum $ map nth (filter (sameD) (list))
-	where sameD a = (y,m,d) == (year a, month a,dayZ a)
+getMax4Day (y, m, d) []      = 0
+getMax4Day (y, m, d) list    = maximum $ map nth (filter sameD list)
+	where sameD a = (y,m,d) == (year a, month a, dayZ a)
+
 -- |
 getInt :: IO Int
 getInt = do str <- getLine
             return (read str)
 -- |
 actual :: (Year,Month,Day) -> [Evento] -> Picture
-actual (y,m,d) lista = picture(m,y,fstday m y,(mlengths y) !! fromEnum m, eventsOnMonth (eventsOnYear lista y) m)
+actual (y,m,d) lista = picture (m, y, fstday m y, 
+					   (mlengths y) !! fromEnum m,
+					   eventsOnMonth (eventsOnYear lista y) 
+					   m)
+
 -- |
 todayEvents :: (Year,Month,Day) -> [Evento] -> [Evento]
-todayEvents (y,m,d) []   =  []
-todayEvents (y,m,d) list = filter sameD list 
+todayEvents (y,m,d) []  	 = []
+todayEvents (y,m,d) list 	 = filter sameD list 
 	where sameD a = (y,m,d) == (year a, month a,dayZ a)
 
 -- |
-todayAgenda:: [Evento] -> IO ()
-todayAgenda [] = do putStrLn ""
+todayAgenda :: [Evento] -> IO ()
+todayAgenda [] 	   = do putStrLn ""
 todayAgenda (e:es) = do
-    putStrLn $ "Evento Nro: " ++ (show $ nth e)
+    putStrLn $ "Evento Nro: "  ++ (show $ nth e)
     putStrLn $ "Descripción: " ++ (description e)
     todayAgenda es
+
 -- |
 mostrarHoy :: [Evento] -> IO ()
-<<<<<<< HEAD
-mostrarHoy [] = do putStrLn "Por ahora no tiene eventos hoy."
-mostrarHoy es = do putStrLn "Eventos de hoy: " >> todayAgenda es    
--- |
-=======
-mostrarHoy [] = do putStrLn "No tiene eventos este día."
-mostrarHoy es = do putStrLn "Eventos del día: " >> todayAgenda es    
+mostrarHoy [] = do putStrLn "Por ahora, no tiene eventos este dia."
+mostrarHoy es = do putStrLn "Eventos del dia: " >> todayAgenda es       
 
->>>>>>> 483f7dc17ab969eb9b33dad519d6c5f7096d0997
+-- |
 hacer :: [Evento] -> (Year, Month, Day) -> IO ()
 hacer list (y,m,d)= do
 	-- teclas para movimientos y eventos
-	let moves = ['j','k','l','h']
-	let evnts = ['d','r']
+	let moves 	  = ['j', 'k', 'l', 'h']
 	let calActual = actual (y,m,d) list
-	let dehoy = todayEvents (y,m,d) list
+	let dehoy 	  = todayEvents (y,m,d) list
 	-- Mostrar fecha calendario, y eventos actuales
-	putStr $ toString calActual
+	putStr   $ toString calActual
 	mostrarHoy dehoy
-	prompt (y,m,d)
+	prompt 	   (y, m, d)
 	-- Solicitar entrada del Usuario
 	s <- getChar
 	-- Colocar un salto de linea
@@ -437,35 +447,34 @@ hacer list (y,m,d)= do
 	-- Si el elemento esta en movimiento
 	if elem s moves then do
 		clearS
-		hacer list (move s (y,m,d))
+		hacer list (move s (y, m, d))
 	else
 		-- registrar
 		if s == 'r' then do
 			putStr "descr: "
-			msj <- getLine
-			let n =  getMax4Day (y,m,d) list
-			let list' = descPrompt (y,m,d) (n+1) list msj
+			msj  	 <- getLine
+			let n 	  = getMax4Day (y, m, d) list
+			let list' = descPrompt (y, m, d) (n + 1) list msj
 			clearS
-			hacer list' (y,m,d)
+			hacer list' (y, m, d)
 		else
 			if s == 'd' then do
-					i <- getInt
-					let list' = removePrompt (y,m,d) list i
+					i 		 <- getInt
+					let list' = removePrompt (y, m, d) list i
 					clearS
-					hacer list' (y,m,d)
+					hacer list' (y, m, d)
 			else
 				if s == 'q' then
 					saveEvents "hagenda.txt" list
 				else
-					clearS >>
-					helpPls >> hacer list (y,m,d)
-
+					clearS  >>
+					helpPls >> hacer list (y, m, d)
 
 main = do
-		c <- currentDate
+		c      <- currentDate
 		exists <- doesFileExist "hagenda.txt"
  		if exists then do
-			list <- loadEvents "hagenda.txt"
+			list <-  loadEvents "hagenda.txt"
 			hacer list c
 		else 
 			hacer [] c
