@@ -406,13 +406,19 @@ todayAgenda:: [Evento] -> IO ()
 todayAgenda [] = do putStrLn ""
 todayAgenda (e:es) = do
     putStrLn $ "Evento Nro: " ++ (show $ nth e)
-    putStrLn $ "Descripción " ++ (description e)
+    putStrLn $ "Descripción: " ++ (description e)
     todayAgenda es
 -- |
 mostrarHoy :: [Evento] -> IO ()
+<<<<<<< HEAD
 mostrarHoy [] = do putStrLn "Por ahora no tiene eventos hoy."
 mostrarHoy es = do putStrLn "Eventos de hoy: " >> todayAgenda es    
 -- |
+=======
+mostrarHoy [] = do putStrLn "No tiene eventos este día."
+mostrarHoy es = do putStrLn "Eventos del día: " >> todayAgenda es    
+
+>>>>>>> 483f7dc17ab969eb9b33dad519d6c5f7096d0997
 hacer :: [Evento] -> (Year, Month, Day) -> IO ()
 hacer list (y,m,d)= do
 	-- teclas para movimientos y eventos
@@ -420,8 +426,8 @@ hacer list (y,m,d)= do
 	let evnts = ['d','r']
 	let calActual = actual (y,m,d) list
 	let dehoy = todayEvents (y,m,d) list
+	-- Mostrar fecha calendario, y eventos actuales
 	putStr $ toString calActual
-	-- Mostrar fecha actual
 	mostrarHoy dehoy
 	prompt (y,m,d)
 	-- Solicitar entrada del Usuario
@@ -429,7 +435,8 @@ hacer list (y,m,d)= do
 	-- Colocar un salto de linea
 	putStrLn ""
 	-- Si el elemento esta en movimiento
-	if elem s moves then
+	if elem s moves then do
+		clearS
 		hacer list (move s (y,m,d))
 	else
 		-- registrar
@@ -438,16 +445,19 @@ hacer list (y,m,d)= do
 			msj <- getLine
 			let n =  getMax4Day (y,m,d) list
 			let list' = descPrompt (y,m,d) (n+1) list msj
+			clearS
 			hacer list' (y,m,d)
 		else
 			if s == 'd' then do
 					i <- getInt
 					let list' = removePrompt (y,m,d) list i
+					clearS
 					hacer list' (y,m,d)
 			else
 				if s == 'q' then
 					saveEvents "hagenda.txt" list
 				else
+					clearS >>
 					helpPls >> hacer list (y,m,d)
 
 
