@@ -2,6 +2,7 @@ import Data.List (sortBy)
 import System.Directory
 import qualified Data.Time.Clock as TCLO
 import qualified Data.Time.Calendar as TCAL
+import System.IO
 
 -- Importamos System.Directory para saber si existe "hagenda.txt"
 -- Type
@@ -464,7 +465,9 @@ hacer list (y,m,d)= do
 	mostrarHoy dehoy
 	prompt 	   (y, m, d)
 	-- Solicitar entrada del Usuario
+	hSetBuffering stdin NoBuffering
 	s <- getChar
+	hSetBuffering stdin LineBuffering
 	-- Colocar un salto de linea
 	putStrLn ""
 	-- Si el elemento esta en movimiento
@@ -474,7 +477,7 @@ hacer list (y,m,d)= do
 	else
 		-- registrar
 		if s == 'r' then do
-			putStr "descr: "
+			putStr "Coloue descripción: "
 			msj  	 <- getLine
 			let n 	  = getMax4Day (y, m, d) list
 			let list' = descPrompt (y, m, d) (n + 1) list msj
@@ -483,10 +486,11 @@ hacer list (y,m,d)= do
 		else
 			-- eliminar
 			if s == 'd' then do
-					i 		 <- getInt
-					let list' = removePrompt (y, m, d) list i
-					clearS
-					hacer list' (y, m, d)
+				putStr "Borrar evento Nro: "
+				i 		 <- getInt
+				let list' = removePrompt (y, m, d) list i
+				clearS
+				hacer list' (y, m, d)
 			else
 				-- salir
 				if s == 'q' then
@@ -498,6 +502,7 @@ hacer list (y,m,d)= do
 
 -- Main
 main = do
+		hSetBuffering stdout NoBuffering
 		c      <- currentDate
 		exists <- doesFileExist "hagenda.txt"
  		if exists then do
