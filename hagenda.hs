@@ -361,7 +361,7 @@ prompt (y,m,d) = putStr (show y 				 	++
 				 (' ':show d)						++
 				 "> ")
 descPrompt :: (Year, Month, Day) -> Int -> [Evento] -> [Char] -> [Evento]
-descPrompt (y,m,d) n list msj = list ++ [e] 
+descPrompt (y,m,d) n list msj= list ++ [e] 
 				where e = Evento {
 							year  = y,
 							month = m,
@@ -379,8 +379,8 @@ removePrompt (y,m,d) list r  = filter (anotherD) list
 				 r /= nth a
 
 getMax4Day :: (Year, Month, Day) -> [Evento] -> Int
-getMax4Day (y,m,d) []   = 1
-getMax4Day (y,m,d) list = maximum $ map nth (filter (sameD) list)
+getMax4Day (y,m,d) []   = 0
+getMax4Day (y,m,d) list = maximum $ map nth (filter (sameD) (list))
 	where sameD a = (y,m,d) == (year a, month a,dayZ a)
 
 getInt :: IO Int
@@ -388,12 +388,12 @@ getInt = do str <- getLine
             return (read str)
 
 actual :: (Year,Month,Day) -> [Evento] -> Picture
-actual (y,m,d) lista = picture(m ,
-							   y ,
-							   fstday m y,
-							   (mlengths y) !! fromEnum m,
-							   eventsOnMonth (eventsOnYear lista y) m
-							  )
+actual (y,m,d) lista = picture(m,y,fstday m y,(mlengths y) !! fromEnum m, eventsOnMonth (eventsOnYear lista y) m)
+
+
+todayEvents (y,m,d) []   =  []
+todayEvents (y,m,d) list = filter sameD list 
+	where sameD a = (y,m,d) == (year a, month a,dayZ a)
 
 hacer :: [Evento] -> (Year, Month, Day) -> IO ()
 hacer list (y,m,d)= do
@@ -403,6 +403,8 @@ hacer list (y,m,d)= do
 	let calActual = actual (y,m,d) list
 	putStr $ toString calActual
 	-- Mostrar fecha actual
+	print "Today Events: " 
+	print  $ todayEvents (y,m,d) list
 	prompt (y,m,d)
 	-- Solicitar entrada del Usuario
 	s <- getChar
@@ -430,9 +432,8 @@ hacer list (y,m,d)= do
 				else
 					helpPls >> hacer list (y,m,d)
 	 	
-		
 
-main = currentDate >>= hacer []
-	-- Buscamos la fecha actual al principio del programa
---	(y,m,d) <- currentDate
-
+main = do 
+	c <- currentDate
+	list <-loadEvents "hagenda.txt" 
+	hacer list c
