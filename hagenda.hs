@@ -401,12 +401,12 @@ todayAgenda:: [Evento] -> IO ()
 todayAgenda [] = do putStrLn ""
 todayAgenda (e:es) = do
     putStrLn $ "Evento Nro: " ++ (show $ nth e)
-    putStrLn $ "Descripción " ++ (description e)
+    putStrLn $ "Descripción: " ++ (description e)
     todayAgenda es
 
 mostrarHoy :: [Evento] -> IO ()
-mostrarHoy [] = do putStrLn "Por ahora no tiene eventos hoy."
-mostrarHoy es = do putStrLn "Eventos de hoy: " >> todayAgenda es    
+mostrarHoy [] = do putStrLn "No tiene eventos este día."
+mostrarHoy es = do putStrLn "Eventos del día: " >> todayAgenda es    
 
 hacer :: [Evento] -> (Year, Month, Day) -> IO ()
 hacer list (y,m,d)= do
