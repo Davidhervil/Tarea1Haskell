@@ -1,4 +1,5 @@
 import Data.List (sortBy)
+import qualified Data.Time as TTT
 import qualified Data.Time.Clock as TCLO
 import qualified Data.Time.Calendar as TCAL
 
@@ -390,7 +391,7 @@ getInt = do str <- getLine
 actual :: (Year,Month,Day) -> [Evento] -> Picture
 actual (y,m,d) lista = picture(m,y,fstday m y,(mlengths y) !! fromEnum m, eventsOnMonth (eventsOnYear lista y) m)
 
-
+todayEvents :: (Year,Month,Day) -> [Evento] -> [Evento]
 todayEvents (y,m,d) []   =  []
 todayEvents (y,m,d) list = filter sameD list 
 	where sameD a = (y,m,d) == (year a, month a,dayZ a)
@@ -431,9 +432,12 @@ hacer list (y,m,d)= do
 					saveEvents "hagenda.txt" list
 				else
 					helpPls >> hacer list (y,m,d)
-	 	
+
+ 	
+readHandler :: IOError -> IO ()
+readHandler a = putStrLn "File doesn't exists" 
 
 main = do 
 	c <- currentDate
-	list <-loadEvents "hagenda.txt" 
-	hacer list c
+	list <- loadEvents "hagenda.txt" 
+	hacer [] c
