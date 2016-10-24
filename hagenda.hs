@@ -396,16 +396,28 @@ todayEvents (y,m,d) []   =  []
 todayEvents (y,m,d) list = filter sameD list 
 	where sameD a = (y,m,d) == (year a, month a,dayZ a)
 
+--
+todayAgenda:: [Evento] -> IO ()
+todayAgenda [] = do putStrLn ""
+todayAgenda (e:es) = do
+    putStrLn $ "Evento Nro: " ++ (show $ nth e)
+    putStrLn $ "Descripción " ++ (description e)
+    todayAgenda es
+
+mostrarHoy :: [Evento] -> IO ()
+mostrarHoy [] = do putStrLn "Por ahora no tiene eventos hoy."
+mostrarHoy es = do putStrLn "Eventos de hoy: " >> todayAgenda es    
+
 hacer :: [Evento] -> (Year, Month, Day) -> IO ()
 hacer list (y,m,d)= do
 	-- teclas para movimientos y eventos
 	let moves = ['j','k','l','h']
 	let evnts = ['d','r']
 	let calActual = actual (y,m,d) list
+	let dehoy = todayEvents (y,m,d) list
 	putStr $ toString calActual
 	-- Mostrar fecha actual
-	print "Today Events: " 
-	print  $ todayEvents (y,m,d) list
+	mostrarHoy dehoy
 	prompt (y,m,d)
 	-- Solicitar entrada del Usuario
 	s <- getChar
