@@ -393,7 +393,7 @@ prompt (y,m,d) = putStr (	   show y   ++
 -- | 'descPrompt' recibe una fecha, un entero, un arreglo de eventos y uno de caracteres
 -- para retornar una lista actualizada con un nuevo evento.
 descPrompt :: (Year, Month, Day) -> Int -> [Evento] -> [Char] -> [Evento]
-descPrompt (y, m, d) n list msj  = list ++ [e] 
+descPrompt (y, m, d) n list msj  = e:list 
 	where e = Evento {
 				year  		= y,
 				month 		= m,
@@ -417,8 +417,12 @@ removePrompt (y, m, d) list r  = filter (anotherD) list
 -- | 'getMax4Day' recibe una fecha, una lista de eventos y retorna el nayor número de evento.
 getMax4Day :: (Year, Month, Day) -> [Evento] -> Int
 getMax4Day (y, m, d) []      = 0
-getMax4Day (y, m, d) list    = maximum $ map nth (filter sameD list)
-	where sameD a = (y,m,d) == (year a, month a, dayZ a)
+getMax4Day (y, m, d) list    = if null losdehoy then
+								0
+							   else
+							   	maximum $ map nth $ losdehoy
+								where
+									losdehoy = todayEvents (y,m,d) list
 
 -- | 'getInt' lee un entero proporcionado por el usuario y retorna un monad IO Int
 getInt :: IO Int
@@ -441,6 +445,7 @@ todayEvents (y,m,d) list 	 = filter sameD list
 	where sameD a = (y,m,d) == (year a, month a,dayZ a)
 
 -- | 'todayAgenda' recibe una lista de Eventos y los muestra al usuario.
+-- ASume que la lista esta ordenada
 todayAgenda :: [Evento] -> IO ()
 todayAgenda [] 	   = do putStrLn ""
 todayAgenda (e:es) = do
@@ -461,7 +466,7 @@ hacer list (y,m,d)= do
 	-- teclas para movimientos y eventos
 	let moves 	  = ['j', 'k', 'l', 'h']
 	let calActual = actual (y,m,d) list
-	let dehoy 	  = todayEvents (y,m,d) list
+	let dehoy 	  = sortBy miord $ todayEvents (y,m,d) list
 	-- Mostrar fecha calendario, y eventos actuales
 	putStr   $ toString calActual
 	mostrarHoy dehoy
